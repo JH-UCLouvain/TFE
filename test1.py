@@ -35,10 +35,9 @@ try:
     net.start()
     IPCLI(net)
 
-    commandA = input("Configure host a :\n") # a ip -6 addr 2001:db8:1341:1::a/64 dev a-eth0
-    commandB = input("Configure host b :\n") # b ip -6 addr 2001:db8:1341:1::b/64 dev b-eth0
-    net["a"].cmd(commandA)
-    net["b"].cmd(commandB)
+    # a ip -6 addr 2001:db8:1341:1::a/64 dev a-eth0
+    # b ip -6 addr 2001:db8:1341:1::b/64 dev b-eth0
+    
     testPing("a", "2001:db8:1341:1::a", net)
     testPing("b", "2001:db8:1341:1::b", net)
 
