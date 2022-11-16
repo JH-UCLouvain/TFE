@@ -27,10 +27,26 @@ def testPing(src, dst, net):
     try:
         resp = jc.parse('ping', resp)
         if resp["packet_loss_percent"] == 0.0 and len(resp["responses"]) > 0 and resp["responses"][0]["response_ip"] == dst:
-            print("sucess ping")
+            return 0
         else:
-            print("error ping")
+            return -1
     except Exception as e: print(e)
+
+def testTraceroute(src, dst, route, net):
+    resp = net[src].cmd(f"traceroute -6 -q 1 -m 5 {dst}")
+    try:
+        resp = jc.parse('traceroute', resp)
+        for hop in resp["hops"]:
+            if hop["hop"] > len(route):
+                return -1
+            if hop["probes"][0]["ip"] != route[hop["hop"]-1]:
+                return -1
+        return 0
+    except Exception as e: print(e)
+
+def testStaticRoutingTable(router,table,net):
+    #TODO
+    return 0
 
 class MyTopology(IPTopo):
 
@@ -42,21 +58,27 @@ class MyTopology(IPTopo):
         r1 = self.addRouter("r1", config=RouterConfig)
         r2 = self.addRouter("r2", config=RouterConfig)
         r3 = self.addRouter("r3", config=RouterConfig)
+
         lh1r1 = self.addLink(h1, r1)
         lh1r1[h1].addParams(ip=generateIPaddr("v6"))
         lh1r1[r1].addParams(ip=generateIPaddr("v6"))
+
         lr1r2 = self.addLink(r1, r2)
         lr1r2[r1].addParams(ip=generateIPaddr("v6"))
         lr1r2[r2].addParams(ip=generateIPaddr("v6"))
+
         lr2r3 = self.addLink(r2, r3)
         lr2r3[r2].addParams(ip=generateIPaddr("v6"))
         lr2r3[r3].addParams(ip=generateIPaddr("v6"))
+
         lr3h3 = self.addLink(r3, h3)
         lr3h3[r3].addParams(ip=generateIPaddr("v6"))
         lr3h3[h3].addParams(ip=generateIPaddr("v6"))
+
         lr2h2 = self.addLink(r2, h2)
         lr2h2[r2].addParams(ip=generateIPaddr("v6"))
         lr2h2[h2].addParams(ip=generateIPaddr("v6"))
+        
         r1.addDaemon(STATIC, static_routes=[])
         r2.addDaemon(STATIC, static_routes=[])
         r3.addDaemon(STATIC, static_routes=[])
@@ -68,12 +90,12 @@ try:
     net.start()
     IPCLI(net)
 
-    testPing("a", "b", net)
-    testPing("b", "a", net)
-    testPing("a", "c", net)
-    testPing("c", "a", net)
-    testPing("b", "c", net)
-    testPing("c", "b", net)
+    print(testPing("a", "b", net))
+    print(testPing("b", "a", net))
+    print(testPing("a", "c", net))
+    print(testPing("c", "a", net))
+    print(testPing("b", "c", net))
+    print(testPing("c", "b", net))
 
 finally:
     net.stop()
