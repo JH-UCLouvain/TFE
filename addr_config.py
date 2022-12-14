@@ -32,8 +32,8 @@ try:
     net.start()
     IPCLI(net)
 
-    print(testPing("h1", "h2", net)[1])
-    print(testPing("h2", "h1", net)[1])
+    print(testPing("h1", "2001:db8:1341:1::2", net)[1])
+    print(testPing("h2", "2001:db8:1341:1::1", net)[1])
 
 except Exception as e: print(e)
 
