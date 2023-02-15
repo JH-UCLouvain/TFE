@@ -1,0 +1,37 @@
+accessible: true
+author: Jeremy Holodiline
+categories: []
+contact_url: ''
+context: |-
+    This exercise will train you to configure ip addresses in a network simulated by IPMininet.
+    It will start with a ssh session by clicking the submit button.
+    For this exercice we will consider a network following this topology :
+        ----        ----
+       | h1 | ---- | h2 |
+        ----        ----
+    The command to configure an address is : ``<node> ip -<version> addr add <address>/<prefixlen> dev <interface>``
+    First you will configure an IPv6 address on the interface ``h1-eth0`` of host ``h1``. To apply this, enter the command ``h1 ip -6 addr add <address>/<prefixlen> dev h1-eth0``.
+    The address that you must use will be showed during the ssh session. Don't forget the address prefix length (``/64`` in this case).
+    Then you will configure in the same way the interface ``h2-eth0`` of host ``h2``.
+environment_id: ''
+environment_parameters:
+    limits:
+        time: '30'
+        hard_time: ''
+        memory: '100'
+    network_grading: 'on'
+    ssh_allowed: 'on'
+    run_cmd: ''
+environment_type: kata
+evaluate: best
+file: ''
+groups: false
+input_random: 0
+name: IPMininet Ex1 - Configuring addresses
+network_grading: false
+problems: {}
+stored_submissions: 0
+submission_limit:
+    amount: -1
+    period: -1
+weight: 1.0
