@@ -1,0 +1,95 @@
+accessible: true
+author: Jeremy Holodiline
+categories: []
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure routes using the static routing methodology. We will consider the following network topology :
+
+    .. image:: https://inginious.org/course/cnp3-beta/IPMininet-Ex2-Configuring-routes/topology.png
+
+
+    Add a route
+    ~~~~~~~~~~~~~~~
+
+
+    As we can see here the host ``h1`` hasn't any route :
+
+    .. code-block:: console
+
+        mininet> h1 ip -6 route
+        2001:db8:1341:1::/64 dev h1-eth0 proto kernel metric 256 pref medium
+        fe80::/64 dev h1-eth0 proto kernel metric 256 pref medium
+
+    This will result as all packets sent by ``h1`` will be dropped. To add a default route to the router ``r1`` you can enter the command ``h1 ip -6 route add default via 2001:db8:1341:1::1`` or ``h1 ip -6 route add ::/0 via 2001:db8:1341:1::1``. Pay attention that the address used after "``via``" is the address of ``r1`` on this link and not ``h1``. Therefore you must use the address of ``r1`` on the link (``r1h1``) and not the address of ``h1`` on the link (``h1r1``). Obviously in general the "``default``" argument can be replaced by any other ``<address>/<prefix>`` argument depending on the route configuration you have to do.
+
+    Now as we can see the routing table of ``h1`` has the default route on its ``h1-eth0`` interface :
+
+    .. code-block:: console
+
+        mininet> h1 ip -6 route
+        2001:db8:1341:1::/64 dev h1-eth0 proto kernel metric 256 pref medium
+        fe80::/64 dev h1-eth0 proto kernel metric 256 pref medium
+        default via 2001:db8:1341:1::1 dev h1-eth0 metric 1024 pref medium
+
+
+    In the same way add now by yourself to ``h2`` the default route to ``r2``.
+
+    Then you can add to ``r1`` the default route to ``r2``. Because of the longest match principle ``r1`` will send the packets for ``h1`` on the link to ``h1``, otherwise it will send them to ``r2``.
+
+
+    Replace a route
+    ~~~~~~~~~~~~~~~
+
+
+    ``r2`` has already a default route but it's point to the host ``h2``
+
+     .. code-block:: console
+
+        mininet> r2 ip -6 route
+        2001:db8:1341:2::/64 dev r2-eth1 proto kernel metric 256 pref medium
+        2001:db8:1341:12::/64 dev r2-eth0 proto kernel metric 256 pref medium
+        fe80::/64 dev r2-eth0 proto kernel metric 256 pref medium
+        fe80::/64 dev r2-eth1 proto kernel metric 256 pref medium
+        default via 2001:db8:1341:2::b dev r2-eth1 metric 1024 pref medium
+
+    To replace this default route you can use the command ``r2 ip -6 route replace default via 2001:db8:1341:12::1``. This will replace the address of ``h2`` (``h2r2``)
+
+    Remove a route
+    ~~~~~~~~~~~~~~
+
+    ``r1`` has a useless route in his routing table. The prefix ``2001:bad:1341:1::/64`` is not used in this topology.
+
+     .. code-block:: console
+
+        mininet> r1 ip -6 route
+        2001:bad:1341:1::/64 via 2001:db8:1341:12::2 dev r1-eth1 metric 1024 pref medium
+        2001:db8:1341:1::/64 dev r1-eth0 proto kernel metric 256 pref medium
+        2001:db8:1341:12::/64 dev r1-eth1 proto kernel metric 256 pref medium
+        fe80::/64 dev r1-eth1 proto kernel metric 256 pref medium
+        fe80::/64 dev r1-eth0 proto kernel metric 256 pref medium
+        default via 2001:db8:1341:12::2 dev r1-eth1 metric 1024 pref medium
+
+    To delete this route you can use the command ``ip -6 route del 2001:bad:1341:1::/64 via 2001:db8:1341:12::2``
+
+    Now you can apply these commands by starting the exercice with the ssh session and follow the steps decribed above. The topology is the same but the IP addresses will be different (you can use the command ``<node> ip -6 addr`` to get them).
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '30'
+        hard_time: ''
+        memory: '200'
+    ssh_allowed: 'on'
+    run_cmd: ''
+environment_type: kata
+evaluate: best
+file: ''
+groups: false
+input_random: 0
+name: IPMininet Ex2 - Configuring routes
+network_grading: false
+problems: {}
+stored_submissions: 1
+submission_limit:
+    amount: -1
+    period: -1
+weight: 1.0

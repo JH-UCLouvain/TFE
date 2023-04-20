@@ -1,0 +1,103 @@
+#!/bin/python3
+# Author : Jeremy Holodiline
+
+from inginious import feedback, ssh_student
+from ipmininet.iptopo import IPTopo
+from ipmininet.ipnet import IPNet
+from ipmininet.cli import IPCLI
+from ipmininet.router.config import RouterConfig, STATIC
+import random
+import jc
+
+addresses = dict()
+
+def generateIPaddr(interface, version):
+    while True:
+        if version == "v4":
+            addr = "192.168." + ".".join(("%s" % random.randint(0, 255) for _ in range(2)))
+        elif version == "v6":
+            addr = "2001:db8:1234:1341:" + ":".join(("%s" % "".join(("%s" % random.choice(("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) for _ in range(4)))
+        else:
+            raise ValueError("IP version must be \"v4\" or \"v6\"")
+        if addr not in addresses.values():
+            addresses[interface] = addr
+            return addr
+
+def testPing(src, dst, net):
+    try:
+        resp = jc.parse('ping', net[src].cmd(f"ping -6 -c 1 -W 1 {dst}"))
+        if resp["packet_loss_percent"] == 0.0 and len(resp["responses"]) > 0 and resp["responses"][0]["response_ip"] == dst:
+            return (75/2, f"Ping {src}-{dst} success")
+        else:
+            return (0, f"Ping {src}-{dst} failed : cannot reach {dst} from {src}")
+    except Exception as e: return (0, f"Ping {src}-{dst} failed : {e}")
+
+class MyTopology(IPTopo):
+
+    def build(self, *args, **kwargs):
+
+        h1 = self.addHost("h1", defaultRoute=None)
+        h2 = self.addHost("h2", defaultRoute=None)
+        r1 = self.addRouter("r1", config=RouterConfig)
+        r2 = self.addRouter("r2", config=RouterConfig)
+
+        lh1r1 = self.addLink(h1, r1)
+        lh1r1[h1].addParams(ip=generateIPaddr("h1r1", "v6") + "/64")
+        lh1r1[r1].addParams(ip=generateIPaddr("r1h1", "v6") + "/64")
+        
+        lr1r2 = self.addLink(r1, r2)
+        lr1r2[r1].addParams(ip=generateIPaddr("r1r2", "v6") + "/64")
+        lr1r2[r2].addParams(ip=generateIPaddr("r2r1", "v6") + "/64")
+        
+        lh2r2 = self.addLink(r2, h2)
+        lh2r2[h2].addParams(ip=generateIPaddr("h2r2", "v6") + "/64")
+        lh2r2[r2].addParams(ip=generateIPaddr("r2h2", "v6") + "/64")
+
+        r1.addDaemon(STATIC, static_routes=[])
+        r2.addDaemon(STATIC, static_routes=[])
+
+        super(MyTopology, self).build(*args, **kwargs)
+
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
+try:
+    bad_address = "2001:db8:bad:1341:" + ":".join(("%s" % "".join(("%s" % random.choice(("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) for _ in range(4)))
+    
+    net.start()
+    net["r1"].cmd("ip -6 route add " + bad_address + "/64 via " + addresses["r2r1"])
+    net["r2"].cmd("ip -6 route add default via " + addresses["h2r2"])
+    
+    IPCLI(net)
+    ssh_student.ssh_student()
+
+    grade = 0
+    message = ""
+
+    ping1 = testPing("h1", addresses["h2r2"], net)
+    grade += ping1[0]
+    message += ping1[1] + "\n"
+
+    ping2 = testPing("h2", addresses["h1r1"], net)
+    grade += ping2[0]
+    message += ping2[1] + "\n"
+    
+    if net["r1"].cmd("ip -6 route del " + bad_address + "/64 via " + addresses["r2r1"]) == "":
+        message += "The bad route is still in the r1 routing table\n"
+    else:
+        message += "The bad route was deleted from the r1 routing table\n"
+        grade += 25
+
+    feedback.set_grade(grade)
+    feedback.set_global_feedback(message)
+    if grade == 100:
+        feedback.set_global_result("success")
+    else:
+        feedback.set_global_result("failed")
+    
+except Exception as e:
+    feedback.set_grade(0)
+    feedback.set_global_feedback(f"{e}")
+    feedback.set_global_result("failed")
+
+finally:
+    net.stop()
