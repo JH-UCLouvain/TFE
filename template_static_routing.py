@@ -117,8 +117,9 @@ class Test:
             print(f"Feedback : {self.feedback}")
             print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
 try:
-    net = IPNet(topo=MyTopology(), allocate_IPs=False)
     net.start()
 
     # TODO : Adding pre configuration commands before starting the exercice if needed
