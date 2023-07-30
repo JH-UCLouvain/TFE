@@ -16,21 +16,22 @@ import random
 
 interface_addr = dict()
 
-def generate_IP_addr(interface_name, IP_version, prefix):
+def generate_IP_addr(interface, version, prefix):
     while True:
         addr = ""
-        if IP_version == "v4":
-            if prefix[-1] != ".": prefix += "."
+        if version == "v4":
+            if prefix != "" and prefix[-1] != ".": prefix += "."
             n_rand = 4 - (len(prefix.split(".")) - 1)
             addr = prefix + ".".join(("%s" % random.randint(0, 255) for _ in range(n_rand)))
-        elif IP_version == "v6":
-            if prefix[-1] != ":": prefix += ":"
+            addr = addr.rstrip(".")
+        elif version == "v6":
+            if prefix != "" and prefix[-1] != ":": prefix += ":"
             n_rand = 8 - (len(prefix.split(":")) - 1)
             addr = prefix + ":".join(("%s" % "".join(("%s" % random.choice(("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) for _ in range(n_rand)))
-        else:
-            raise ValueError("IP version must be \"v4\" or \"v6\"")
+            addr = addr.rstrip(":")
+        else: raise ValueError("IP version must be \"v4\" or \"v6\"")
         if addr not in interface_addr.values():
-            interface_addr[interface_name] = addr
+            interface_addr[interface] = addr
             return addr
 
 class MyTopology(IPTopo):
@@ -61,52 +62,50 @@ class Test:
         self.n_success_test = 0
         self.feedback = ""
 
-    def __addresses_are_equals(self, address1, address2):
-        addr1_list = address1.split(":") if ":" in address1 else address1.split(".")
-        addr2_list = address2.split(":") if ":" in address2 else address2.split(".")
-        if len(addr1_list) != len(addr2_list): return False
-        for i in range(len(addr1_list)):
-            if addr1_list[i].lstrip('0').lower() != addr2_list[i].lstrip('0').lower(): return False
-        return True
-
     def ping_test(self, src_name, dst_interface_name, net):
         self.n_test += 1
         dst_address = interface_addr[dst_interface_name]
         dst_name = dst_interface_name.split("-")[0]
         dst_IP_version = "6" if ":" in dst_address else "4"
+        output = ""
         try:
             output = net[src_name].cmd(f"ping -{dst_IP_version} -c 1 -W 1 {dst_address}")
-            if " 0% packet loss" in output or " 0.0% packet loss" in output:
-                self.n_success_test += 1
-                self.feedback += f"Ping {src_name} -> {dst_name} success\n"
-            else:
-                self.feedback += f"Ping {src_name} -> {dst_name} failed, cannot reach {dst_name} from {src_name} :\n{output}\n"
         except Exception as e:
-            self.feedback += f"Ping {src_name} -> {dst_name} error :\n{e}\n"
+            self.feedback += f"Ping {src_name} -> {dst_name} error : {e}\n"
+            return
+        if " 0% packet loss" in output or " 0.0% packet loss" in output:
+            self.n_success_test += 1
+            self.feedback += f"Ping {src_name} -> {dst_name} success\n"
+        else:
+            self.feedback += f"Ping {src_name} -> {dst_name} failed : {output}\n"
 
     def traceroute_test(self, src_name, dst_interface_name, expected_route, net):
         self.n_test += 1
         dst_address = interface_addr[dst_interface_name]
         dst_name = dst_interface_name.split("-")[0]
         dst_IP_version = "6" if ":" in dst_address else "4"
+        output = ""
         try:
             output = net[src_name].cmd(f"traceroute -{dst_IP_version} -q 1 {dst_address}")
-            real_route = []
-            for line in output.splitlines()[1:]:
-                address = line[line.find("(")+1:line.find(")")]
-                real_route.append(address)
-            if len(real_route) != len(expected_route):
-                self.feedback += f"Traceroute {src_name} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
-            else:
-                for i in range(len(real_route)):
-                    if not self.__addresses_are_equals(real_route[i], expected_route[i]):
-                        self.feedback += f"Traceroute {src_name} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
-                        return
-                self.n_success_test += 1
-                self.feedback += f"Traceroute {src_name} -> {dst_name} success\n"
         except Exception as e:
-            self.feedback += f"Traceroute {src_name} -> {dst_name} error :\n{e}\n"
-    
+            self.feedback += f"Traceroute {src_name} -> {dst_name} error : {e}\n"
+            return
+        real_route = []
+        lines_list = output.splitlines()[1:]
+        for line in lines_list:
+            real_route.append(line.split()[1])
+        if lines_list[0].split()[0] != "1":
+            self.feedback += f"Traceroute {src_name} -> {dst_name} failed : {output}\n"
+        elif len(real_route) != len(expected_route):
+            self.feedback += f"Traceroute {src_name} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
+        else:
+            for i in range(len(real_route)):
+                if real_route[i] != expected_route[i]:
+                    self.feedback += f"Traceroute {src_name} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
+                    return
+            self.n_success_test += 1
+            self.feedback += f"Traceroute {src_name} -> {dst_name} success\n"
+
     def send_feedback(self):
         grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
         if INGINIOUS:
@@ -136,7 +135,7 @@ try:
 
     # TODO : Adding network configuration tests
     # test.ping_test("h1", "h2-r2", net)
-    # test.traceroute_test("h1", "h2-r2", [interface_addr["r1-h1"], interface_addr["r2-r1"], interface_addr["h2-r2"]], net)
+    # test.traceroute_test("h1", "h2-r2", ["r1", "r2", "h2"], net)
     # ...
 
     test.send_feedback()
