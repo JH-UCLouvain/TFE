@@ -106,6 +106,27 @@ class Test:
             self.n_success_test += 1
             self.feedback += f"Traceroute {src_name} -> {dst_name} success\n"
 
+    def route_test(self, src_name, version, dst, way, must_be, net):
+        self.n_test += 1
+        output = ""
+        try:
+            output = net[src_name].cmd(f"ip -{version} route")
+        except Exception as e:
+            self.feedback += f"Ip route {src_name} error : {e}\n"
+            return
+        route = f"{dst} via {way}"
+        route_is_there = True if route in output else False
+        if route_is_there and must_be:
+            self.n_success_test += 1
+            self.feedback += f"Ip route {route} is in the {src_name} routing table : success\n"
+        elif (not route_is_there) and must_be:
+            self.feedback += f"Ip route {route} is not in the {src_name} routing table : failed : it must be added\n"
+        elif route_is_there and (not must_be):
+            self.feedback += f"Ip route {route} is in the {src_name} routing table : failed : it must be removed\n"
+        elif (not route_is_there) and (not must_be):
+            self.n_success_test += 1
+            self.feedback += f"Ip route {route} is not in the {src_name} routing table : success\n"
+
     def send_feedback(self):
         grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
         if INGINIOUS:
@@ -117,12 +138,19 @@ class Test:
             print(f"Feedback : {self.feedback}")
             print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
+# TODO : Adding a function for a custom command for the IPMininet client
+# def my_custom_command(net, line):
+#     pass
+
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
     net.start()
 
-    # TODO : Adding pre configuration commands before starting the exercice if needed
+    # TODO : Binding the function to the IPMininet custom command
+    # IPCLI.do_mycommand = my_custom_command
+
+    # TODO : Adding pre configuration commands before starting the exercice
     # net["h1"].cmd("ip -6 route add default via " + interface_addr["r1-h1"])
     # net["r1"].cmd("ip -6 route add " + interface_addr["h3-r3"] + "/64 via " + interface_addr["r3-r1"])
     # ...
@@ -137,6 +165,7 @@ try:
     # TODO : Adding network configuration tests
     # test.ping_test("h1", "h2-r2", net)
     # test.traceroute_test("h1", "h2-r2", ["r1", "r2", "h2"], net)
+    # test.route_test("r1", "6", interface_addr["h2-r2"] + "/64", interface_addr["r2-r1"], True, net)
     # ...
 
     test.send_feedback()
