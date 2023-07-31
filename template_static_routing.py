@@ -165,7 +165,7 @@ try:
     # TODO : Adding network configuration tests
     # test.ping_test("h1", "h2-r2", net)
     # test.traceroute_test("h1", "h2-r2", ["r1", "r2", "h2"], net)
-    # test.route_test("r1", "6", interface_addr["h2-r2"] + "/64", interface_addr["r2-r1"], True, net)
+    # test.route_test("r1", "6", bad_route + "/64", interface_addr["r2-r1"], False, net)
     # ...
 
     test.send_feedback()
