@@ -30,6 +30,21 @@ def generate_IP_addr(interface, version, prefix):
         if addr not in interface_addr.values():
             interface_addr[interface] = addr
             return addr
+        
+def get_address(node, version, interface_name, net):
+    output = ""
+    try:
+        output = net[node].cmd(f"ip -{version} addr show dev {interface_name}")
+    except Exception as e:
+        raise ValueError(f"{node} ip -{version} addr show dev {interface_name} error : {e}")
+    address = ""
+    for line in output.splitlines():
+        inet = "inet"
+        if version == "6" : inet += "6"
+        if inet in line and "scope global" in line:
+            address = line.split()[1]
+            break
+    return address
 
 class MyTopology(IPTopo):
 
