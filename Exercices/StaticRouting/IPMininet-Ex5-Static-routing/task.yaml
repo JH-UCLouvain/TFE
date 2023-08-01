@@ -1,0 +1,30 @@
+accessible: true
+author: Emilie Deprez, Jeremy Holodiline
+categories: []
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure the network using the static routing methodology. We will consider the following network topology :
+
+    .. image:: https://inginious.org/course/cnp3-beta/IPMininet-Ex5-Static-routing/topology.png
+
+    Configure the routes so that the two hosts can reach each other. The addresses are already configured, try to find them by yourself with the Mininet commands.
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '30'
+        hard_time: ''
+        memory: '200'
+    run_cmd: ''
+environment_type: kata-ssh
+evaluate: best
+file: ''
+groups: false
+input_random: 0
+name: IPMininet Ex5 - Static routing
+network_grading: false
+problems: {}
+stored_submissions: 1
+submission_limit:
+    amount: -1
+    period: -1
+weight: 1.0
