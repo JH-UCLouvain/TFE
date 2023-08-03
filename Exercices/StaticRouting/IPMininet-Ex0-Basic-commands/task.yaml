@@ -96,9 +96,10 @@ context: |-
 environment_id: ipmininet
 environment_parameters:
     limits:
-        time: '30'
+        time: '6000'
         hard_time: ''
-        memory: '1000'
+        memory: '1339'
+    network_grading: 'on'
     run_cmd: ''
 environment_type: kata-ssh
 evaluate: best
