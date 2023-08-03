@@ -184,6 +184,7 @@ try:
         ssh_student.ssh_student()
 
     test = Test()
+    test.feedback += "Success"
     test.send_feedback()
 
 except Exception as e:
