@@ -1,8 +1,7 @@
 #!/bin/python3
 # Author : Jeremy Holodiline
 
-# TODO : Setting the flag saying if the integration to INGInious is used or not
-INGINIOUS = False
+INGINIOUS = True
 
 if INGINIOUS:
     from inginious import feedback, ssh_student
@@ -33,40 +32,45 @@ def generate_IP_addr(interface, version, prefix):
         if addr not in interface_addr.values():
             interface_addr[interface] = addr
             return addr
-        
-def get_address(node, version, interface_name, net):
-    output = ""
-    try:
-        output = net[node].cmd(f"ip -{version} addr show dev {interface_name}")
-    except Exception as e:
-        raise ValueError(f"{node} ip -{version} addr show dev {interface_name} error : {e}")
-    address = ""
-    for line in output.splitlines():
-        inet = "inet"
-        if version == "6" : inet += "6"
-        if inet in line and "scope global" in line:
-            address = line.split()[1]
-            break
-    return address
 
 class MyTopology(IPTopo):
 
     def build(self, *args, **kwargs):
 
-        # TODO : Creating the nodes
-        # h1 = self.addHost("h1", defaultRoute=None)
-        # r1 = self.addRouter("r1", config=RouterConfig)
-        # ...
+        h1 = self.addHost("h1", defaultRoute=None)
+        h2 = self.addHost("h2", defaultRoute=None)
+        h3 = self.addHost("h3", defaultRoute=None)
+        r1 = self.addRouter("r1", config=RouterConfig)
+        r2 = self.addRouter("r2", config=RouterConfig)
+        r3 = self.addRouter("r3", config=RouterConfig)
 
-        # TODO : Creating the links between the nodes
-        # lh1r1 = self.addLink(h1, r1)
-        # lh1r1[h1].addParams(ip = generate_IP_addr("h1-r1", "v6", "2001:db8:1341:1:") + "/64")
-        # lh1r1[r1].addParams(ip = generate_IP_addr("r1-h1", "v6", "2001:db8:1341:1:") + "/64")
-        # ...
+        lh1r1 = self.addLink(h1, r1)
+        lh1r1[h1].addParams(ip = generate_IP_addr("h1-r1", "v6", "2001:db8:1341:1:") + "/64")
+        lh1r1[r1].addParams(ip = generate_IP_addr("r1-h1", "v6", "2001:db8:1341:1:") + "/64")
 
-        # TODO : Adding empty static routing tables to the routers
-        # r1.addDaemon(STATIC, static_routes=[])
-        # ...
+        lh2r2 = self.addLink(h2, r2)
+        lh2r2[h2].addParams(ip = generate_IP_addr("h2-r2", "v6", "2001:db8:1341:2:") + "/64")
+        lh2r2[r2].addParams(ip = generate_IP_addr("r2-h2", "v6", "2001:db8:1341:2:") + "/64")
+
+        lh3r3 = self.addLink(h3, r3)
+        lh3r3[h3].addParams(ip = generate_IP_addr("h3-r3", "v6", "2001:db8:1341:3:") + "/64")
+        lh3r3[r3].addParams(ip = generate_IP_addr("r3-h3", "v6", "2001:db8:1341:3:") + "/64")
+
+        lr1r2 = self.addLink(r1, r2)
+        lr1r2[r1].addParams(ip = generate_IP_addr("r1-r2", "v6", "2001:db8:1341:4:") + "/64")
+        lr1r2[r2].addParams(ip = generate_IP_addr("r2-r1", "v6", "2001:db8:1341:4:") + "/64")
+
+        lr1r3 = self.addLink(r1, r3)
+        lr1r3[r1].addParams(ip = generate_IP_addr("r1-r3", "v6", "2001:db8:1341:5:") + "/64")
+        lr1r3[r3].addParams(ip = generate_IP_addr("r3-r1", "v6", "2001:db8:1341:5:") + "/64")
+
+        lr2r3 = self.addLink(r2, r3)
+        lr2r3[r2].addParams(ip = generate_IP_addr("r2-r3", "v6", "2001:db8:1341:6:") + "/64")
+        lr2r3[r3].addParams(ip = generate_IP_addr("r3-r2", "v6", "2001:db8:1341:6:") + "/64")
+
+        r1.addDaemon(STATIC, static_routes=[])
+        r2.addDaemon(STATIC, static_routes=[])
+        r3.addDaemon(STATIC, static_routes=[])
 
         super(MyTopology, self).build(*args, **kwargs)
 
@@ -153,22 +157,20 @@ class Test:
             print(f"Feedback : {self.feedback}")
             print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
-# TODO : Adding a function for a custom command for the IPMininet client
-# def my_custom_command(net, line):
-#     pass
-
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
     net.start()
-
-    # TODO : Binding the function to the IPMininet custom command
-    # IPCLI.do_mycommand = my_custom_command
-
-    # TODO : Configuring the network before starting the exercice
-    # net["h1"].cmd("ip -6 route add default via " + interface_addr["r1-h1"])
-    # net["r1"].cmd("ip -6 route add " + interface_addr["h3-r3"] + "/64 via " + interface_addr["r3-r1"])
-    # ...
+    net["h1"].cmd("ip -6 route add default via " + interface_addr["r1-h1"])
+    net["h2"].cmd("ip -6 route add default via " + interface_addr["r2-h2"])
+    net["h3"].cmd("ip -6 route add default via " + interface_addr["r3-h3"])
+    net["r1"].cmd("ip -6 route add " + interface_addr["h2-r2"] + "/64 via " + interface_addr["r2-r1"])
+    net["r1"].cmd("ip -6 route add " + interface_addr["h3-r3"] + "/64 via " + interface_addr["r3-r1"])
+    net["r2"].cmd("ip -6 route add " + interface_addr["h1-r1"] + "/64 via " + interface_addr["r1-r2"])
+    net["r2"].cmd("ip -6 route add " + interface_addr["h3-r3"] + "/64 via " + interface_addr["r3-r2"])
+    net["r3"].cmd("ip -6 route add " + interface_addr["h1-r1"] + "/64 via " + interface_addr["r1-r3"])
+    net["r3"].cmd("ip -6 route add " + interface_addr["h2-r2"] + "/64 via " + interface_addr["r2-r3"])
+    net.runFailurePlan([random.choice([("r1", "r2"), ("r1", "r3"), ("r2", "r3")])])
 
     IPCLI(net)
 
@@ -176,13 +178,12 @@ try:
         ssh_student.ssh_student()
 
     test = Test()
-
-    # TODO : Adding network configuration tests
-    # test.ping_test("h1", "h2-r2", net)
-    # test.traceroute_test("h1", "h2-r2", ["r1", "r2", "h2"], net)
-    # test.route_test("r1", "6", bad_route + "/64", interface_addr["r2-r1"], False, net)
-    # ...
-
+    test.ping_test("h1", "h2-r2", net)
+    test.ping_test("h1", "h3-r3", net)
+    test.ping_test("h2", "h1-r1", net)
+    test.ping_test("h2", "h3-r3", net)
+    test.ping_test("h3", "h1-r1", net)
+    test.ping_test("h3", "h2-r2", net)
     test.send_feedback()
 
 except Exception as e:
