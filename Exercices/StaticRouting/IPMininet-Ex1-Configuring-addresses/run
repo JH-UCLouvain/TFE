@@ -130,7 +130,7 @@ class Test:
             print(f"Feedback : {self.feedback}")
             print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
-def get_address(net, line):
+def get_address(cli, args):
     print(f"h1 must be configured with the address : " + interface_addr["h1-h2"])
     print(f"h2 must be configured with the address : " + interface_addr["h2-h1"])
 

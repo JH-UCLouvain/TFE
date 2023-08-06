@@ -140,7 +140,7 @@ class Test:
             print(f"Feedback : {self.feedback}")
             print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
-def get_address(net, line):
+def get_address(cli, args):
     for interface, addr in interface_addr.items():
         print(f"The IP address of {interface} must be configured as : {addr}/64")
 

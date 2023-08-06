@@ -154,7 +154,7 @@ class Test:
             print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
 # TODO : Adding a function for a custom command for the IPMininet client
-# def my_custom_command(net, line):
+# def my_custom_command(cli, args):
 #     pass
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
