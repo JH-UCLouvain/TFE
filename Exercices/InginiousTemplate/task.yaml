@@ -12,6 +12,6 @@ environment_parameters:
 environment_type: docker-ssh
 file: ''
 input_random: 0
-name: test
+name: template
 network_grading: false
 problems: {}
