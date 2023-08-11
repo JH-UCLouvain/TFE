@@ -1,0 +1,17 @@
+author: ''
+contact_url: ''
+context: ''
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: test
+network_grading: false
+problems: {}

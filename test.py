@@ -1,10 +1,9 @@
 #!/bin/python3
-# Author : Jeremy Holodiline
 
 INGINIOUS = True
 
 if INGINIOUS:
-    from inginious import feedback, ssh_student
+    from inginious import feedback
 
 from ipmininet.iptopo import IPTopo
 from ipmininet.ipnet import IPNet
@@ -39,152 +38,28 @@ class MyTopology(IPTopo):
 
         h1 = self.addHost("h1", defaultRoute=None)
         h2 = self.addHost("h2", defaultRoute=None)
-        h3 = self.addHost("h3", defaultRoute=None)
-        r1 = self.addRouter("r1", config=RouterConfig)
-        r2 = self.addRouter("r2", config=RouterConfig)
-        r3 = self.addRouter("r3", config=RouterConfig)
 
-        lh1r1 = self.addLink(h1, r1)
-        lh1r1[h1].addParams(ip = generate_IP_addr("h1-r1", "v6", "2001:db8:1341:1:") + "/64")
-        lh1r1[r1].addParams(ip = generate_IP_addr("r1-h1", "v6", "2001:db8:1341:1:") + "/64")
-
-        lh2r2 = self.addLink(h2, r2)
-        lh2r2[h2].addParams(ip = generate_IP_addr("h2-r2", "v6", "2001:db8:1341:2:") + "/64")
-        lh2r2[r2].addParams(ip = generate_IP_addr("r2-h2", "v6", "2001:db8:1341:2:") + "/64")
-
-        lh3r3 = self.addLink(h3, r3)
-        lh3r3[h3].addParams(ip = generate_IP_addr("h3-r3", "v6", "2001:db8:1341:3:") + "/64")
-        lh3r3[r3].addParams(ip = generate_IP_addr("r3-h3", "v6", "2001:db8:1341:3:") + "/64")
-
-        lr1r2 = self.addLink(r1, r2)
-        lr1r2[r1].addParams(ip = generate_IP_addr("r1-r2", "v6", "2001:db8:1341:4:") + "/64")
-        lr1r2[r2].addParams(ip = generate_IP_addr("r2-r1", "v6", "2001:db8:1341:4:") + "/64")
-
-        lr1r3 = self.addLink(r1, r3)
-        lr1r3[r1].addParams(ip = generate_IP_addr("r1-r3", "v6", "2001:db8:1341:5:") + "/64")
-        lr1r3[r3].addParams(ip = generate_IP_addr("r3-r1", "v6", "2001:db8:1341:5:") + "/64")
-
-        lr2r3 = self.addLink(r2, r3)
-        lr2r3[r2].addParams(ip = generate_IP_addr("r2-r3", "v6", "2001:db8:1341:6:") + "/64")
-        lr2r3[r3].addParams(ip = generate_IP_addr("r3-r2", "v6", "2001:db8:1341:6:") + "/64")
-
-        r1.addDaemon(STATIC, static_routes=[])
-        r2.addDaemon(STATIC, static_routes=[])
-        r3.addDaemon(STATIC, static_routes=[])
+        lh1h2 = self.addLink(h1, h2)
+        lh1h2[h1].addParams(ip = generate_IP_addr("h1-h2", "v6", "2001:db8:1341:1:") + "/64")
+        lh1h2[h2].addParams(ip = generate_IP_addr("h2-h1", "v6", "2001:db8:1341:1:") + "/64")
 
         super(MyTopology, self).build(*args, **kwargs)
-
-class Test:
-
-    def __init__(self):
-        self.n_test = 0
-        self.n_success_test = 0
-        self.feedback = ""
-
-    def ping_test(self, src_name, dst_interface_name, net):
-        self.n_test += 1
-        dst_address = interface_addr[dst_interface_name]
-        dst_name = dst_interface_name.split("-")[0]
-        dst_IP_version = "6" if ":" in dst_address else "4"
-        output = ""
-        try:
-            output = net[src_name].cmd(f"ping -{dst_IP_version} -c 1 -W 1 {dst_address}")
-        except Exception as e:
-            self.feedback += f"Ping {src_name} -> {dst_name} error : {e}\n"
-            return
-        if " 0% packet loss" in output or " 0.0% packet loss" in output:
-            self.n_success_test += 1
-            self.feedback += f"Ping {src_name} -> {dst_name} success\n"
-        else:
-            self.feedback += f"Ping {src_name} -> {dst_name} failed : {output}\n"
-
-    def traceroute_test(self, src_name, dst_interface_name, expected_route, net):
-        self.n_test += 1
-        dst_address = interface_addr[dst_interface_name]
-        dst_name = dst_interface_name.split("-")[0]
-        dst_IP_version = "6" if ":" in dst_address else "4"
-        output = ""
-        try:
-            output = net[src_name].cmd(f"traceroute -{dst_IP_version} -q 1 {dst_address}")
-        except Exception as e:
-            self.feedback += f"Traceroute {src_name} -> {dst_name} error : {e}\n"
-            return
-        real_route = []
-        lines_list = output.splitlines()[1:]
-        for line in lines_list:
-            real_route.append(line.split()[1])
-        if lines_list[0].split()[0] != "1":
-            self.feedback += f"Traceroute {src_name} -> {dst_name} failed : {output}\n"
-        elif len(real_route) != len(expected_route):
-            self.feedback += f"Traceroute {src_name} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
-        else:
-            for i in range(len(real_route)):
-                if real_route[i] != expected_route[i]:
-                    self.feedback += f"Traceroute {src_name} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
-                    return
-            self.n_success_test += 1
-            self.feedback += f"Traceroute {src_name} -> {dst_name} success\n"
-
-    def route_test(self, src_name, version, dst, way, must_be, net):
-        self.n_test += 1
-        output = ""
-        try:
-            output = net[src_name].cmd(f"ip -{version} route")
-        except Exception as e:
-            self.feedback += f"Ip route {src_name} error : {e}\n"
-            return
-        route = f"{dst} via {way}"
-        route_is_there = True if route in output else False
-        if route_is_there and must_be:
-            self.n_success_test += 1
-            self.feedback += f"Ip route {route} is in the {src_name} routing table : success\n"
-        elif (not route_is_there) and must_be:
-            self.feedback += f"Ip route {route} is not in the {src_name} routing table : failed : it must be added\n"
-        elif route_is_there and (not must_be):
-            self.feedback += f"Ip route {route} is in the {src_name} routing table : failed : it must be removed\n"
-        elif (not route_is_there) and (not must_be):
-            self.n_success_test += 1
-            self.feedback += f"Ip route {route} is not in the {src_name} routing table : success\n"
-
-    def send_feedback(self):
-        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
-        if INGINIOUS:
-            feedback.set_grade(grade)
-            feedback.set_global_feedback(self.feedback)
-            feedback.set_global_result("success") if grade == 100 else feedback.set_global_result("failed")
-        else:
-            print(f"Grade : {grade}")
-            print(f"Feedback : {self.feedback}")
-            print(f"Result : success") if grade == 100 else print(f"Result : failed")
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
     net.start()
-    net["h1"].cmd("ip -6 route add default via " + interface_addr["r1-h1"])
-    net["h2"].cmd("ip -6 route add default via " + interface_addr["r2-h2"])
-    net["h3"].cmd("ip -6 route add default via " + interface_addr["r3-h3"])
-    net["r1"].cmd("ip -6 route add " + interface_addr["h2-r2"] + "/64 via " + interface_addr["r2-r1"])
-    net["r1"].cmd("ip -6 route add " + interface_addr["h3-r3"] + "/64 via " + interface_addr["r3-r1"])
-    net["r2"].cmd("ip -6 route add " + interface_addr["h1-r1"] + "/64 via " + interface_addr["r1-r2"])
-    net["r2"].cmd("ip -6 route add " + interface_addr["h3-r3"] + "/64 via " + interface_addr["r3-r2"])
-    net["r3"].cmd("ip -6 route add " + interface_addr["h1-r1"] + "/64 via " + interface_addr["r1-r3"])
-    net["r3"].cmd("ip -6 route add " + interface_addr["h2-r2"] + "/64 via " + interface_addr["r2-r3"])
-    net.runFailurePlan([random.choice([("r1", "r2"), ("r1", "r3"), ("r2", "r3")])])
-
+    
     IPCLI(net)
 
     if INGINIOUS:
-        ssh_student.ssh_student()
-
-    test = Test()
-    test.ping_test("h1", "h2-r2", net)
-    test.ping_test("h1", "h3-r3", net)
-    test.ping_test("h2", "h1-r1", net)
-    test.ping_test("h2", "h3-r3", net)
-    test.ping_test("h3", "h1-r1", net)
-    test.ping_test("h3", "h2-r2", net)
-    test.send_feedback()
+        feedback.set_grade(100)
+        feedback.set_global_feedback(f"Success")
+        feedback.set_global_result("success")
+    else:
+        print(f"Grade : 100")
+        print(f"Feedback : Success")
+        print(f"Result : success")
 
 except Exception as e:
     if INGINIOUS:
@@ -198,3 +73,24 @@ except Exception as e:
 
 finally:
     net.stop()
+
+def store_feedback(grade, feedback, result):
+    file = open("student/scripts/grade","w")
+    file.write(str(grade))
+    file.close()
+    file = open("student/scripts/feedback","w")
+    file.write(feedback)
+    file.close()
+    file = open("student/scripts/result","w")
+    file.write(result)
+    file.close()
+
+f = open("student/scripts/grade", "r")
+feedback.set_grade(float(f.read()))
+f.close()
+f = open("student/scripts/feedback", "r")
+feedback.set_global_feedback(f.read())
+f.close()
+f = open("student/scripts/result", "r")
+feedback.set_global_result(f.read())
+f.close()

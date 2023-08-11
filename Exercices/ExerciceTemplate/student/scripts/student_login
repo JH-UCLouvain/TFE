@@ -1,0 +1,63 @@
+#!/bin/python3
+# Author : Jeremy Holodiline
+
+from ipmininet.iptopo import IPTopo
+from ipmininet.ipnet import IPNet
+from ipmininet.cli import IPCLI
+from ipmininet.router.config import RouterConfig, STATIC
+
+import random
+
+interface_addr = dict()
+
+def generate_IP_addr(interface, version, prefix):
+    while True:
+        addr = ""
+        if version == "v4":
+            if prefix != "" and prefix[-1] != ".": prefix += "."
+            n_rand = 4 - (len(prefix.split(".")) - 1)
+            addr = prefix + ".".join(("%s" % random.randint(0, 255) for _ in range(n_rand)))
+            addr = addr.rstrip(".")
+        elif version == "v6":
+            if prefix != "" and prefix[-1] != ":": prefix += ":"
+            n_rand = 8 - (len(prefix.split(":")) - 1)
+            addr = prefix + ":".join(("%s" % "".join(("%s" % random.choice(("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) for _ in range(n_rand)))
+            addr = addr.rstrip(":")
+        else: raise ValueError("IP version must be \"v4\" or \"v6\"")
+        if addr not in interface_addr.values():
+            interface_addr[interface] = addr
+            return addr
+
+class MyTopology(IPTopo):
+
+    def build(self, *args, **kwargs):
+
+        h1 = self.addHost("h1", defaultRoute=None)
+        h2 = self.addHost("h2", defaultRoute=None)
+
+        lh1h2 = self.addLink(h1, h2)
+        lh1h2[h1].addParams(ip = generate_IP_addr("h1-h2", "v6", "2001:db8:1341:1:") + "/64")
+        lh1h2[h2].addParams(ip = generate_IP_addr("h2-h1", "v6", "2001:db8:1341:1:") + "/64")
+
+        super(MyTopology, self).build(*args, **kwargs)
+        
+def store_feedback(grade, result, feedback):
+    with open("tmp/student/feedback.txt", "w") as f:
+        f.write(str(grade) + "\n")
+        f.write(result + "\n")
+        f.write(feedback)
+
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
+try:   
+    net.start()
+    
+    IPCLI(net)
+
+    store_feedback(100, "success", "Success from mininet script")
+
+except Exception as e:
+    store_feedback(0, "failed", f"Error from mininet script : {e}")
+
+finally:
+    net.stop()
