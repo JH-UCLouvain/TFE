@@ -4,7 +4,7 @@
 from ipmininet.iptopo import IPTopo
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
-from ipmininet.router.config import RouterConfig, STATIC
+from ipmininet.router.config import RouterConfig
 
 def store_feedback(grade, result, feedback):
     STORE = True
@@ -56,11 +56,6 @@ class MyTopology(IPTopo):
         self.addLink(r2, r3)
         self.addLink(r3, r4)
         self.addLink(r1, r4)
-
-        r1.addDaemon(STATIC, static_routes=[])
-        r2.addDaemon(STATIC, static_routes=[])
-        r3.addDaemon(STATIC, static_routes=[])
-        r4.addDaemon(STATIC, static_routes=[])
 
         super(MyTopology, self).build(*args, **kwargs)
 

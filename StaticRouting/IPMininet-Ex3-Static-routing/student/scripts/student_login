@@ -4,7 +4,7 @@
 from ipmininet.iptopo import IPTopo
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
-from ipmininet.router.config import RouterConfig, STATIC
+from ipmininet.router.config import RouterConfig
 
 import random
 
@@ -52,8 +52,6 @@ class MyTopology(IPTopo):
         self.addLink(h1, r1)
         self.addLink(h2, r1)
         self.addLink(h3, r1)
-
-        r1.addDaemon(STATIC, static_routes=[])
 
         generate_IP_addr("h1-r1", "v6", "2001:db8:1341:1:")
         generate_IP_addr("r1-h1", "v6", "2001:db8:1341:1:")

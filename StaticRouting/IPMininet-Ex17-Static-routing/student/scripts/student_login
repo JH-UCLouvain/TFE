@@ -4,7 +4,7 @@
 from ipmininet.iptopo import IPTopo
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
-from ipmininet.router.config import RouterConfig, STATIC
+from ipmininet.router.config import RouterConfig
 
 import random
 
@@ -74,10 +74,6 @@ class MyTopology(IPTopo):
         lr2r3 = self.addLink(r2, r3)
         lr2r3[r2].addParams(ip = generate_IP_addr("r2-r3", "v6", "2001:db8:1341:6:") + "/64")
         lr2r3[r3].addParams(ip = generate_IP_addr("r3-r2", "v6", "2001:db8:1341:6:") + "/64")
-
-        r1.addDaemon(STATIC, static_routes=[])
-        r2.addDaemon(STATIC, static_routes=[])
-        r3.addDaemon(STATIC, static_routes=[])
 
         super(MyTopology, self).build(*args, **kwargs)
 
