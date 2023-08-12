@@ -1,11 +1,9 @@
-accessible: true
 author: Emilie Deprez, Jeremy Holodiline
-categories: []
 contact_url: ''
 context: |-
     This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. The grading for this exercice is not important while the network is already configured, the goal is to show you the main basic commands to retreive some information about the current state of the network. We will consider the following network topology :
 
-    .. image:: https://inginious.org/course/cnp3-beta/IPMininet-Ex0-Basic-commands/topology.png
+    .. image:: IPMininet-Ex0-Basic-commands/topology.png
 
     You can find below some commands that can help you to analyse the network :
 
@@ -96,21 +94,14 @@ context: |-
 environment_id: ipmininet
 environment_parameters:
     limits:
-        time: '6000'
+        time: '600'
         hard_time: ''
-        memory: '1339'
+        memory: '512'
     network_grading: 'on'
     run_cmd: ''
-environment_type: kata-ssh
-evaluate: best
+environment_type: docker-ssh
 file: ''
-groups: false
 input_random: 0
 name: IPMininet Ex0 - Basic commands
 network_grading: false
 problems: {}
-stored_submissions: 1
-submission_limit:
-    amount: -1
-    period: -1
-weight: 1.0

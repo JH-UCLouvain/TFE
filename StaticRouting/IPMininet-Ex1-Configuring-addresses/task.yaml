@@ -1,31 +1,22 @@
-accessible: true
 author: Emilie Deprez, Jeremy Holodiline
-categories: []
 contact_url: ''
 context: |-
     This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure IP addresses. We will consider the following network topology :
 
-    .. image:: https://inginious.org/course/cnp3-beta/IPMininet-Ex1-Configuring-addresses/topology.png
+    .. image:: IPMininet-Ex1-Configuring-addresses/topology.png
 
     The command to configure an address is : ``<node> ip -<version> addr add <address>/<prefixlen> dev <interface>``. First you will configure an IPv6 address on the interface ``h1-eth0`` of host ``h1``. To apply this, enter the command ``h1 ip -6 addr add <address>/<prefixlen> dev h1-eth0``. The address that you must use can be revealed by entering our custom command ``getaddress`` during the ssh session and we will use a ``/64`` subnet. Then you will configure in the same way the interface ``h2-eth0`` of host ``h2``.
 environment_id: ipmininet
 environment_parameters:
     limits:
-        time: '6000'
+        time: '600'
         hard_time: ''
-        memory: '1339'
+        memory: '512'
     network_grading: 'on'
     run_cmd: ''
-environment_type: kata-ssh
-evaluate: best
+environment_type: docker-ssh
 file: ''
-groups: false
 input_random: 0
 name: IPMininet Ex1 - Configuring addresses
 network_grading: false
 problems: {}
-stored_submissions: 1
-submission_limit:
-    amount: -1
-    period: -1
-weight: 1.0

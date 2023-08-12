@@ -1,6 +1,4 @@
-accessible: true
 author: Jeremy Holodiline
-categories: []
 contact_url: ''
 context: This exercise aims to teach you the basic network configuration commands
     in a virtual network simulated by IPMininet. It uses a ssh session that you can
@@ -15,21 +13,14 @@ context: This exercise aims to teach you the basic network configuration command
 environment_id: ipmininet
 environment_parameters:
     limits:
-        time: '6000'
+        time: '600'
         hard_time: ''
-        memory: '1339'
+        memory: '512'
     network_grading: 'on'
     run_cmd: ''
-environment_type: kata-ssh
-evaluate: best
+environment_type: docker-ssh
 file: ''
-groups: false
 input_random: 0
 name: IPMininet Ex15 - Static routing
 network_grading: false
 problems: {}
-stored_submissions: 1
-submission_limit:
-    amount: -1
-    period: -1
-weight: 1.0

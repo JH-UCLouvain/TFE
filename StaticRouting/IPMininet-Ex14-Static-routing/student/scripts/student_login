@@ -1,0 +1,140 @@
+#!/bin/python3
+# Author : Jeremy Holodiline
+
+from ipmininet.iptopo import IPTopo
+from ipmininet.ipnet import IPNet
+from ipmininet.cli import IPCLI
+from ipmininet.router.config import RouterConfig, STATIC
+
+def store_feedback(grade, result, feedback):
+    STORE = True
+    if STORE:
+        with open("tmp/student/feedback.txt", "w") as f:
+            f.write(str(grade) + "\n")
+            f.write(result + "\n")
+            f.write(feedback)
+    else:
+        print(f"Grade : {grade}")
+        print(f"Result : {result}")
+        print(f"Feedback : {feedback}")
+
+interface_addr = dict()
+
+def get_address(node, version, interface_name, net):
+    output = ""
+    try:
+        output = net[node].cmd(f"ip -{version} addr show dev {interface_name}")
+    except Exception as e:
+        raise ValueError(f"{node} ip -{version} addr show dev {interface_name} error : {e}")
+    address = ""
+    for line in output.splitlines():
+        inet = "inet"
+        if version == "6" : inet += "6"
+        if inet in line and "scope global" in line:
+            address = line.split()[1]
+            break
+    return address
+
+class MyTopology(IPTopo):
+
+    def build(self, *args, **kwargs):
+
+        h1 = self.addHost("h1", defaultRoute=None)
+        h2 = self.addHost("h2", defaultRoute=None)
+        h3 = self.addHost("h3", defaultRoute=None)
+        h4 = self.addHost("h4", defaultRoute=None)
+        r1 = self.addRouter("r1", config=RouterConfig)
+        r2 = self.addRouter("r2", config=RouterConfig)
+        r3 = self.addRouter("r3", config=RouterConfig)
+        r4 = self.addRouter("r4", config=RouterConfig)
+
+        self.addLink(h1, r1)
+        self.addLink(h2, r2)
+        self.addLink(h3, r3)
+        self.addLink(h4, r4)
+        self.addLink(r1, r2)
+        self.addLink(r2, r3)
+        self.addLink(r3, r4)
+        self.addLink(r1, r4)
+
+        r1.addDaemon(STATIC, static_routes=[])
+        r2.addDaemon(STATIC, static_routes=[])
+        r3.addDaemon(STATIC, static_routes=[])
+        r4.addDaemon(STATIC, static_routes=[])
+
+        super(MyTopology, self).build(*args, **kwargs)
+
+class Test:
+
+    def __init__(self):
+        self.n_test = 0
+        self.n_success_test = 0
+        self.feedback = ""
+
+    def ping_test(self, src_name, dst_interface_name, net):
+        self.n_test += 1
+        dst_address = interface_addr[dst_interface_name]
+        dst_name = dst_interface_name.split("-")[0]
+        dst_IP_version = "6" if ":" in dst_address else "4"
+        output = ""
+        try:
+            output = net[src_name].cmd(f"ping -{dst_IP_version} -c 1 -W 1 {dst_address}")
+        except Exception as e:
+            self.feedback += f"Ping {src_name} -> {dst_name} error : {e}\n"
+            return
+        if " 0% packet loss" in output or " 0.0% packet loss" in output:
+            self.n_success_test += 1
+            self.feedback += f"Ping {src_name} -> {dst_name} success\n"
+        else:
+            self.feedback += f"Ping {src_name} -> {dst_name} failed : {output}\n"
+
+    def send_feedback(self):
+        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
+        result = "success" if grade == 100 else "failed"
+        store_feedback(grade, result, self.feedback)
+
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
+try:
+    net.start()
+
+    IPCLI(net)
+
+    test = Test()
+
+    h1_addr = get_address("h1", "6", "h1-eth0", net)
+    h2_addr = get_address("h2", "6", "h2-eth0", net)
+    h3_addr = get_address("h3", "6", "h3-eth0", net)
+    h4_addr = get_address("h4", "6", "h4-eth0", net)
+    interface_addr["h1-r1"] = h1_addr.split("/")[0]
+    interface_addr["h2-r2"] = h2_addr.split("/")[0]
+    interface_addr["h3-r3"] = h3_addr.split("/")[0]
+    interface_addr["h4-r4"] = h4_addr.split("/")[0]
+    if h1_addr == "": test.feedback += "h1 has no address configured\n"
+    if h2_addr == "": test.feedback += "h2 has no address configured\n"
+    if h3_addr == "": test.feedback += "h3 has no address configured\n"
+    if h4_addr == "": test.feedback += "h4 has no address configured\n"
+
+    test.ping_test("h1", "h2-r2", net)
+    test.ping_test("h1", "h3-r3", net)
+    test.ping_test("h1", "h4-r4", net)
+
+    test.ping_test("h2", "h1-r1", net)
+    test.ping_test("h2", "h3-r3", net)
+    test.ping_test("h2", "h4-r4", net)
+
+    test.ping_test("h3", "h1-r1", net)
+    test.ping_test("h3", "h2-r2", net)
+    test.ping_test("h3", "h4-r4", net)
+
+    test.ping_test("h4", "h1-r1", net)
+    test.ping_test("h4", "h2-r2", net)
+    test.ping_test("h4", "h3-r3", net)
+
+    test.send_feedback()
+
+except Exception as e:
+    store_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+
+finally:
+    net.stop()
