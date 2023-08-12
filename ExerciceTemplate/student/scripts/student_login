@@ -8,6 +8,18 @@ from ipmininet.router.config import RouterConfig, STATIC
 
 import random
 
+def store_feedback(grade, result, feedback):
+    STORE = True
+    if STORE:
+        with open("tmp/student/feedback.txt", "w") as f:
+            f.write(str(grade) + "\n")
+            f.write(result + "\n")
+            f.write(feedback)
+    else:
+        print(f"Grade : {grade}")
+        print(f"Result : {result}")
+        print(f"Feedback : {feedback}")
+
 interface_addr = dict()
 
 def generate_IP_addr(interface, version, prefix):
@@ -40,18 +52,12 @@ class MyTopology(IPTopo):
         lh1h2[h2].addParams(ip = generate_IP_addr("h2-h1", "v6", "2001:db8:1341:1:") + "/64")
 
         super(MyTopology, self).build(*args, **kwargs)
-        
-def store_feedback(grade, result, feedback):
-    with open("tmp/student/feedback.txt", "w") as f:
-        f.write(str(grade) + "\n")
-        f.write(result + "\n")
-        f.write(feedback)
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
-try:   
+try:
     net.start()
-    
+
     IPCLI(net)
 
     store_feedback(100, "success", "Success from mininet script")
