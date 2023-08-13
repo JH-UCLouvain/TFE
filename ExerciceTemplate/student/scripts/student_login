@@ -150,8 +150,9 @@ class Test:
         store_feedback(grade, result, self.feedback)
 
 # TODO : Adding a function for a custom command for the IPMininet client if needed
-# def my_custom_command(cli, args):
-#     pass
+# def get_all_addresses(cli, args):
+#     for interface, addr in interface_addr.items():
+#         print(f"The IP address of interface {interface} is : {addr}/64")
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
@@ -159,7 +160,7 @@ try:
     net.start()
 
     # TODO : Binding the command function to the IPMininet custom command
-    # IPCLI.do_mycommand = my_custom_command
+    # IPCLI.do_getalladdresses = get_all_addresses
 
     # TODO : Adding instructions to configure the network before the student begins the exercice if needed
     # net["h1"].cmd(...)
