@@ -121,7 +121,7 @@ class Test:
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
-    bad_route = "2001:bad:1341:" + "".join(("%s" % random.choice(("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) + "::"
+    bad_route = "2001:bad:1341:" + "".join(("%s" % random.choice(("1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) + "::"
 
     net.start()
     net["r1"].cmd("ip -6 route add " + bad_route + "/64 via " + interface_addr["r2-r1"])
