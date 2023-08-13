@@ -151,6 +151,7 @@ class Test:
 
 # TODO : Adding a function for a custom command for the IPMininet client if needed
 # def my_custom_command(cli, args):
+#     pass
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 

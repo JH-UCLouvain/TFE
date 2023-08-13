@@ -97,35 +97,33 @@ try:
 
     test = Test()
 
-    h1_addr = get_address("h1", "6", "h1-eth0", net)
-    h2_addr = get_address("h2", "6", "h2-eth0", net)
-    h3_addr = get_address("h3", "6", "h3-eth0", net)
-    h4_addr = get_address("h4", "6", "h4-eth0", net)
-    interface_addr["h1-r1"] = h1_addr.split("/")[0]
-    interface_addr["h2-r2"] = h2_addr.split("/")[0]
-    interface_addr["h3-r3"] = h3_addr.split("/")[0]
-    interface_addr["h4-r4"] = h4_addr.split("/")[0]
-    if h1_addr == "": test.feedback += "h1 has no address configured\n"
-    if h2_addr == "": test.feedback += "h2 has no address configured\n"
-    if h3_addr == "": test.feedback += "h3 has no address configured\n"
-    if h4_addr == "": test.feedback += "h4 has no address configured\n"
+    hosts_have_addr = True
+    for host in ("h1-r1", "h2-r2", "h3-r3", "h4-r4"):
+        test.n_test += 1
+        host_name = host.split("-")[0]
+        addr = get_address(host_name, "6", f"{host_name}-eth0", net)
+        interface_addr[host] = addr.split("/")[0]
+        if addr == "":
+            hosts_have_addr = False
+            test.feedback += f"{host_name} has no address configured\n"
+        else : test.n_success_test += 1
 
-    test.ping_test("h1", "h2-r2", net)
-    test.ping_test("h1", "h3-r3", net)
-    test.ping_test("h1", "h4-r4", net)
+    if hosts_have_addr:
+        test.ping_test("h1", "h2-r2", net)
+        test.ping_test("h1", "h3-r3", net)
+        test.ping_test("h1", "h4-r4", net)
 
-    test.ping_test("h2", "h1-r1", net)
-    test.ping_test("h2", "h3-r3", net)
-    test.ping_test("h2", "h4-r4", net)
+        test.ping_test("h2", "h1-r1", net)
+        test.ping_test("h2", "h3-r3", net)
+        test.ping_test("h2", "h4-r4", net)
 
-    test.ping_test("h3", "h1-r1", net)
-    test.ping_test("h3", "h2-r2", net)
-    test.ping_test("h3", "h4-r4", net)
+        test.ping_test("h3", "h1-r1", net)
+        test.ping_test("h3", "h2-r2", net)
+        test.ping_test("h3", "h4-r4", net)
 
-    test.ping_test("h4", "h1-r1", net)
-    test.ping_test("h4", "h2-r2", net)
-    test.ping_test("h4", "h3-r3", net)
-
+        test.ping_test("h4", "h1-r1", net)
+        test.ping_test("h4", "h2-r2", net)
+        test.ping_test("h4", "h3-r3", net)
     test.send_feedback()
 
 except Exception as e:
