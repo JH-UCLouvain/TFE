@@ -122,6 +122,9 @@ class Test:
         except Exception as e:
             self.feedback += f"Traceroute {src_name} -> {dst_name} error : {e}\n"
             return
+        if "command not found" in output:
+            self.feedback += f"Traceroute {src_name} -> {dst_name} error : {output}\n"
+            return
         real_route = []
         lines_list = output.splitlines()[1:]
         for line in lines_list:
