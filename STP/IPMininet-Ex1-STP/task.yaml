@@ -3,7 +3,7 @@ contact_url: ''
 context: |-
     This exercise aims to teach you the basic network commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to find informations about a LAN network.
 
-    First you, can identify the switches and the links between them by using ``nodes`` and ``links``. After that, try to find all blocked ports. For that you can use the command ``<node> brctl showstp <node>``. You can give your answer by typing the custom command ``answer`` followed by the names of the blocked interfaces separated by a comma (for example ``answer s1-eth1,s2-eth3``). If there is no blocked port, you can just enter ``answer none``.
+    First, you can identify the switches and the links between them by using ``nodes`` and ``links``. After that, try to find all blocked ports. For that, you can use the command ``<node> brctl showstp <node>``. You can give your answer by typing the custom command ``answer`` followed by the names of the blocked interfaces separated by a comma (for example ``answer s1-eth1,s2-eth3``). If there is no blocked port, you can just enter ``answer none``.
 environment_id: ipmininet
 environment_parameters:
     limits:

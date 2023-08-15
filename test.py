@@ -23,34 +23,21 @@ class MyTopology(IPTopo):
 
     def build(self, *args, **kwargs):
 
-        switch_numbers = list(range(1,100))
+        s_var_names = ["a", "b", "c", "d", "e"]
+        s_var = {}
+        s_num = list(range(1,100))
 
-        random_switch_number = random.choice(switch_numbers)
-        a = self.addSwitch(f"s{random_switch_number}", prio=random_switch_number)
-        switch_numbers.remove(random_switch_number)
+        for var_name in s_var_names:
+            rand_s_num = random.choice(s_num)
+            s_var[var_name] = self.addSwitch(f"s{rand_s_num}", prio=rand_s_num)
+            s_num.remove(rand_s_num)
 
-        random_switch_number = random.choice(switch_numbers)
-        b = self.addSwitch(f"s{random_switch_number}", prio=random_switch_number)
-        switch_numbers.remove(random_switch_number)
-
-        random_switch_number = random.choice(switch_numbers)
-        c = self.addSwitch(f"s{random_switch_number}", prio=random_switch_number)
-        switch_numbers.remove(random_switch_number)
-
-        random_switch_number = random.choice(switch_numbers)
-        d = self.addSwitch(f"s{random_switch_number}", prio=random_switch_number)
-        switch_numbers.remove(random_switch_number)
-
-        random_switch_number = random.choice(switch_numbers)
-        e = self.addSwitch(f"s{random_switch_number}", prio=random_switch_number)
-        switch_numbers.remove(random_switch_number)
-
-        self.addLink(a, e)
-        self.addLink(a, d)
-        self.addLink(e, d)
-        self.addLink(c, e)
-        self.addLink(c, b)
-        self.addLink(d, b)
+        self.addLink(s_var["a"], s_var["b"])
+        self.addLink(s_var["a"], s_var["d"])
+        self.addLink(s_var["a"], s_var["e"])
+        self.addLink(s_var["b"], s_var["c"])
+        self.addLink(s_var["c"], s_var["d"])
+        self.addLink(s_var["d"], s_var["e"])
 
         super(MyTopology, self).build(*args, **kwargs)
 
@@ -76,10 +63,8 @@ class Test:
             self.n_success_test += 1
             self.feedback += "Success\n"
         else:
-            correst_str = ",".join(self.correct_answer)
-            correst_str.rstrip(",")
-            stud_str = ",".join(student_answer)
-            stud_str.rstrip(",")
+            correst_str = ",".join(self.correct_answer).rstrip(",")
+            stud_str = ",".join(student_answer).rstrip(",")
             self.feedback += f"Failed : the correct answer was {correst_str} but got {stud_str}\n"
 
     def send_feedback(self):
@@ -90,9 +75,10 @@ class Test:
 student_answer = []
 
 def answer(cli, args):
-    global student_answer
-    student_answer = sorted(list(set(args.split(","))))
-    if student_answer == ['']: student_answer = [str("none")]
+    sorted_ports = sorted(list(set(args.split(","))))
+    for port in sorted_ports:
+        student_answer.append(port)
+    if student_answer == [""]: student_answer[0] = "no answer"
 
 net = IPNet(topo=MyTopology())
 
@@ -103,7 +89,7 @@ try:
 
     IPCLI(net)
 
-    if len(student_answer) == 0: student_answer.append(str("none"))
+    if len(student_answer) == 0: student_answer.append("no answer")
 
     test = Test()
     test.blocking_port_test(student_answer)
