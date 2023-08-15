@@ -23,21 +23,26 @@ class MyTopology(IPTopo):
 
     def build(self, *args, **kwargs):
 
-        s_var_names = ["a", "b", "c", "d", "e"]
+        s_var_names = ["a", "b", "c", "d", "e", "f"]
         s_var = {}
         s_num = list(range(1,100))
+        s_prio = list(range(1,100))
 
         for var_name in s_var_names:
             rand_s_num = random.choice(s_num)
-            s_var[var_name] = self.addSwitch(f"s{rand_s_num}", prio=rand_s_num)
+            rand_s_prio = random.choice(s_prio)
+            s_var[var_name] = self.addSwitch(f"s{rand_s_num}", prio=rand_s_prio)
             s_num.remove(rand_s_num)
+            s_prio.remove(rand_s_prio)
 
         self.addLink(s_var["a"], s_var["b"])
-        self.addLink(s_var["a"], s_var["d"])
-        self.addLink(s_var["a"], s_var["e"])
+        self.addLink(s_var["a"], s_var["c"])
         self.addLink(s_var["b"], s_var["c"])
+        self.addLink(s_var["b"], s_var["e"])
+        self.addLink(s_var["c"], s_var["e"])
         self.addLink(s_var["c"], s_var["d"])
-        self.addLink(s_var["d"], s_var["e"])
+        self.addLink(s_var["d"], s_var["f"])
+        self.addLink(s_var["e"], s_var["f"])
 
         super(MyTopology, self).build(*args, **kwargs)
 
@@ -47,15 +52,13 @@ class Test:
         self.n_test = 0
         self.n_success_test = 0
         self.feedback = ""
-        self.correct_answer = []
+        self.correct_answer = ""
         for s in net.switches:
             s_name = s.name
             lines = net[s_name].cmd(f"brctl showstp {s_name}").splitlines()
-            for i in range(len(lines)):
-                if "blocking" in lines[i]:
-                    self.correct_answer.append(lines[i-1].split(" ")[0])
-        if len(self.correct_answer) == 0: self.correct_answer.append(str("none"))
-        else: self.correct_answer = sorted(list(set(self.correct_answer)))
+            if lines[1].split()[2] == lines[2].split()[2]:
+                self.correct_answer = s_name
+                break
 
     def blocking_port_test(self, student_answer):
         self.n_test += 1
@@ -63,9 +66,7 @@ class Test:
             self.n_success_test += 1
             self.feedback += "Success\n"
         else:
-            correst_str = ",".join(self.correct_answer).rstrip(",")
-            stud_str = ",".join(student_answer).rstrip(",")
-            self.feedback += f"Failed : the correct answer was {correst_str} but got {stud_str}\n"
+            self.feedback += f"Failed : the correct answer was {self.correct_answer} but got {student_answer}\n"
 
     def send_feedback(self):
         grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
@@ -75,10 +76,8 @@ class Test:
 student_answer = []
 
 def answer(cli, args):
-    sorted_ports = sorted(list(set(args.split(","))))
-    for port in sorted_ports:
-        student_answer.append(port)
-    if student_answer == [""]: student_answer[0] = "no answer"
+    if args == "": student_answer.append("no answer")
+    else: student_answer.append(args)
 
 net = IPNet(topo=MyTopology())
 
@@ -92,7 +91,7 @@ try:
     if len(student_answer) == 0: student_answer.append("no answer")
 
     test = Test()
-    test.blocking_port_test(student_answer)
+    test.blocking_port_test(student_answer[0])
     test.send_feedback()
 
 except Exception as e:
