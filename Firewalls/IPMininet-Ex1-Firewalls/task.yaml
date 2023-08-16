@@ -1,0 +1,26 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure firewalls by using filters on the packets and we will consider the following topology:
+
+    .. image:: IPMininet-Ex1-Firewalls/topology.png
+
+    For that, you can use the ``iptables`` (``ip6tables`` for IPv6) command to configure firewalls. We will consider the 3 main following "chains" for the firewall rules : ``INPUT``, ``OUTPUT`` and ``FORWARD`` that respectively concern the incoming traffic, the outgoing traffic and the incoming traffic that must be forwarded to an other destination. The main actions that can be applied are ``ACCEPT`` and ``DROP``.
+
+    There are many possible arguments but here are most common ones. ``-L`` can list the current installed rules, ``-F`` removes all current installed rules, ``-A`` adds a specific rule and ``-D`` removes a specific rule. ``-s``, ``-d``, ``-sport``, ``-dport`` allows to specify source/destination addresses and ports and ``-p`` a protocol.
+
+    For example, the command to add a rule that drops all incoming TCP packets on port 65000 of h1 would be : ``h1 ip6tables -A INPUT -p tcp --dport 65000 -j DROP``. For this exercice you have to use ``ip6tables`` commands to apply the instructions that you can get by entering our custom command ``instructions``.
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex1 - Firewalls
+network_grading: false
+problems: {}
