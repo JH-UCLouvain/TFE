@@ -60,7 +60,7 @@ class Test:
                 self.correct_answer = s_name
                 break
 
-    def blocking_port_test(self, student_answer):
+    def compare_answer_test(self, student_answer):
         self.n_test += 1
         if student_answer == self.correct_answer:
             self.n_success_test += 1
@@ -91,7 +91,7 @@ try:
     if len(student_answer) == 0: student_answer.append("no answer")
 
     test = Test()
-    test.blocking_port_test(student_answer[0])
+    test.compare_answer_test(student_answer[0])
     test.send_feedback()
 
 except Exception as e:
