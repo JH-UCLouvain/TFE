@@ -92,7 +92,7 @@ class Test:
             self.n_success_test += 1
             self.feedback += f"Success\n"
         else:
-            self.feedback += f"Failed : {node} {command} : {failed_msg}\n"
+            self.feedback += f"Failed : {failed_msg}\n"
 
     def send_feedback(self):
         grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
@@ -123,12 +123,12 @@ try:
     IPCLI(net)
 
     test = Test()
-    test.rule_test("h2", f"nmap -6 --max-retries 0 -p {h1_port_to_drop} h1", "filtered", f"1) h1 {h1_port_to_drop} port still reachable")
-    test.rule_test("h2", f"nmap -6 --max-retries 0 -p {h2_port_to_drop} h1", "filtered", f"2) Outcome from h2 {h2_port_to_drop} port")
-    test.rule_test("h2", f"ping -6 -c 1 -W 1 h3", "100% packet loss", f"3) h2 can still reach h3")
-    test.rule_test("h3", f"nmap -6 --max-retries 0 -p {h3_port_to_remove} h1", "closed", f"4) Rule about h3 {h3_port_to_remove} port still there")
-    test.rule_test("h3", f"nmap -6 --max-retries 0 -p {h3_port_to_not_remove} h1", "filtered", f"4) An other r3 rule has been deleted when it should not have")
-    test.rule_test("h2", f"ping -6 -c 1 -W 1 h4", "100% packet loss", f"5) h2 can still reach h4")
+    test.rule_test("h2", f"nmap -6 --max-retries 0 -p {h1_port_to_drop} {interface_addr['h1-r1']}", "filtered", f"1) h1 {h1_port_to_drop} port still reachable")
+    test.rule_test("h2", f"nmap -6 --max-retries 0 -p {h2_port_to_drop} {interface_addr['h1-r1']}", "filtered", f"2) Outcome from h2 {h2_port_to_drop} port")
+    test.rule_test("h2", f"ping -6 -c 1 -W 1 {interface_addr['h3-r1']}", "100% packet loss", f"3) h2 can still reach h3")
+    test.rule_test("h3", f"nmap -6 --max-retries 0 -p {h3_port_to_remove} {interface_addr['h1-r1']}", "closed", f"4) Rule about h3 {h3_port_to_remove} port still there")
+    test.rule_test("h3", f"nmap -6 --max-retries 0 -p {h3_port_to_not_remove} {interface_addr['h1-r1']}", "filtered", f"4) An other r3 rule has been deleted when it should not have")
+    test.rule_test("h2", f"ping -6 -c 1 -W 1 {interface_addr['h4-r1']}", "100% packet loss", f"5) h2 can still reach h4")
     test.send_feedback()
 
 except Exception as e:
