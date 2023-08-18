@@ -1,0 +1,22 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure firewalls by using filters on the packets and we will consider the following topology:
+
+    .. image:: IPMininet-Ex2-Firewalls/topology.png
+
+    In this network the host ``h4`` has been identified as malicious. Configure the rules by using ``ip6tables`` on the other hosts that will drop all packets sent and received from ``h4``.
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex2 - Firewalls
+network_grading: false
+problems: {}
