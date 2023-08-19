@@ -135,8 +135,8 @@ class Test:
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
-    bad_route = "2001:bad:1341:" + "".join(("%s" % random.choice(("1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) + "::"
-    cafe_route = "2001:cafe:1341:" + "".join(("%s" % random.choice(("1","2","3","4","5","6","7","8","9","a","b","c","d","e","f")) for _ in range(4))) + "::"
+    bad_route = "2001:bad:1341:" + str(format(random.randint(1, 0xffff), "x")) + "::"
+    cafe_route = "2001:cafe:1341:" + str(format(random.randint(1, 0xffff), "x")) + "::"
 
     net.start()
     net["h1"].cmd("ip -6 route add default via " + interface_addr["r1-h1"])
