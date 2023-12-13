@@ -1,0 +1,26 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to enable OSPF on the routers. We will consider the following network topology :
+
+    .. image:: IPMininet-Ex1-Enable-OSPF/topology.png
+
+    OSPF is a dynamic protocol that automatically build the routing tables of the devices based on the link-state packets exchanged. To configure OSPF we need the FRRouting protocol suite that can be used here through the VTYSH command interface. You can enter in a FRR environnement of a node by using the ``<node> vtysh`` command. After that you can enter your configuration commands, do a ``write`` command to save you configuration and then execute an ``exit`` command
+    to return on the main IPMininet client (and eventually repeating that for other nodes). It's also possible to directly execute a FRR command without entering in the VTYSH client with the ``-c`` argument (e.g. ``r1 vtysh -c '<cmd>'``) or execute multiple commands one after the other with a single line command : ``r1 vtysh -c '<cmd1>' -c '<cmd2>' -c '<cmd3>'...``.
+    To enable OSPF, once in VTYSH, you first have to enter in the configuration mode with the ``configure terminal`` command. Then you have to enter in the OSPF section with ``router ospf``. After that you have to use the ``network <address>/<mask> area <address>`` command. This one will identify which node interfaces must be included in the OSPF process. For this exercices the routers IPv4 addresses are already configured. Look for them
+    and make sure that the address/mask that you will use in the command includes all interfaces. We will use ``0.0.0.0`` as area address. Don't forget the ``exit`` and ``write`` commands. Repeat the process for the 3 routers so that OSPF is activated everywhere and everyone can communicate with the others. The ``show running-config`` command could be useful to check the current configurations enabled on a device. If you want to remove a configuration you can use the
+    ``no`` prefix in front of the configuration command (e.g. ``no network ...``).
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex1 - Enable OSPF
+network_grading: false
+problems: {}

@@ -1,0 +1,110 @@
+#!/bin/python3
+# Author : Jeremy Holodiline
+
+from ipmininet.iptopo import IPTopo
+from ipmininet.ipnet import IPNet
+from ipmininet.cli import IPCLI
+
+import random
+
+def store_feedback(grade, result, feedback):
+    STORE = False
+    if STORE:
+        with open("tmp/student/feedback.txt", "w") as f:
+            f.write(str(grade) + "\n")
+            f.write(result + "\n")
+            f.write(feedback)
+    else:
+        print(f"Grade : {grade}")
+        print(f"Result : {result}")
+        print(f"Feedback : {feedback}")
+
+interface_addr = dict()
+
+def generate_IP_addr(interface, version, prefix):
+    while True:
+        addr = ""
+        if version == "v4":
+            if prefix != "" and prefix[-1] != ".": prefix += "."
+            n_rand = 4 - (len(prefix.split(".")) - 1)
+            addr = prefix + ".".join(("%s" % random.randint(0, 255) for _ in range(n_rand)))
+            addr = addr.rstrip(".")
+        elif version == "v6":
+            if prefix != "" and prefix[-1] != ":": prefix += ":"
+            n_rand = 8 - (len(prefix.split(":")) - 1)
+            addr = prefix + ":".join(("%s" % format(random.randint(0, 0xffff), "x") for _ in range(n_rand)))
+            addr = addr.rstrip(":")
+        else: raise ValueError("IP version must be \"v4\" or \"v6\"")
+        if addr not in interface_addr.values():
+            interface_addr[interface] = addr
+            return addr
+
+class MyTopology(IPTopo):
+
+    def build(self, *args, **kwargs):
+
+        r1 = self.addRouter("r1")
+        r2 = self.addRouter("r2")
+        r3 = self.addRouter("r3")
+
+        prefix = str(random.randint(0, 255)) + "." + str(random.randint(0, 255))
+
+        lr1r2 = self.addLink(r1, r2)
+        lr1r2[r1].addParams(ip = generate_IP_addr("r1-r2", "v4", f"{prefix}.1") + "/24")
+        lr1r2[r2].addParams(ip = generate_IP_addr("r2-r1", "v4", f"{prefix}.1") + "/24")
+
+        lr2r3 = self.addLink(r2, r3)
+        lr2r3[r2].addParams(ip = generate_IP_addr("r2-r3", "v4", f"{prefix}.2") + "/24")
+        lr2r3[r3].addParams(ip = generate_IP_addr("r3-r2", "v4", f"{prefix}.2") + "/24")
+
+        super(MyTopology, self).build(*args, **kwargs)
+
+class Test:
+
+    def __init__(self):
+        self.n_test = 0
+        self.n_success_test = 0
+        self.feedback = ""
+
+    def ping_test(self, src_name, dst_interface_name, net):
+        self.n_test += 1
+        dst_address = interface_addr[dst_interface_name]
+        dst_name = dst_interface_name.split("-")[0]
+        dst_IP_version = "6" if ":" in dst_address else "4"
+        output = ""
+        try:
+            output = net[src_name].cmd(f"ping -{dst_IP_version} -c 1 -W 1 {dst_address}")
+        except Exception as e:
+            self.feedback += f"Ping {src_name} -> {dst_name} error : {e}\n"
+            return
+        if " 0% packet loss" in output or " 0.0% packet loss" in output:
+            self.n_success_test += 1
+            self.feedback += f"Ping {src_name} -> {dst_name} success\n"
+        else:
+            self.feedback += f"Ping {src_name} -> {dst_name} failed : {output}\n"
+
+    def send_feedback(self):
+        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
+        result = "success" if grade == 100 else "failed"
+        store_feedback(grade, result, self.feedback)
+
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
+try:
+    net.start()
+    net["r1"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
+    net["r2"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
+    net["r3"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
+
+    IPCLI(net)
+
+    test = Test()
+    test.ping_test("r1", "r3-r2", net)
+    test.ping_test("r3", "r1-r2", net)
+    test.send_feedback()
+
+except Exception as e:
+    store_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+
+finally:
+    net.stop()
