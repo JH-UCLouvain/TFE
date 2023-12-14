@@ -92,9 +92,10 @@ net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
     net.start()
-    net["r1"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
-    net["r2"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
-    net["r3"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
+    remove_config_cmd = "vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit' -c 'write memory'"
+    net["r1"].cmd(remove_config_cmd)
+    net["r2"].cmd(remove_config_cmd)
+    net["r3"].cmd(remove_config_cmd)
 
     IPCLI(net)
 

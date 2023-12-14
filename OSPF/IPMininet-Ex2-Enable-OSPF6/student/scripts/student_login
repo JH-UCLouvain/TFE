@@ -8,7 +8,7 @@ from ipmininet.cli import IPCLI
 import random
 
 def store_feedback(grade, result, feedback):
-    STORE = False #TODOOOOOOOOOOOOOOOOOOOOOOOO
+    STORE = True
     if STORE:
         with open("tmp/student/feedback.txt", "w") as f:
             f.write(str(grade) + "\n")
@@ -50,15 +50,22 @@ class MyTopology(IPTopo):
 
         prefix = ":".join(("%s" % format(random.randint(0, 0xffff), "x") for _ in range(3)))
 
-        lr1r2 = self.addLink(r1, r2)
+        r1_r2_intf = f"r1-eth{random.randint(0, 50)}"
+        r2_r1_intf = f"r2-eth{random.randint(0, 10)}"
+        r2_r3_intf = f"r2-eth{random.randint(11, 20)}"
+        r3_r2_intf = f"r3-eth{random.randint(0, 50)}"
+        r2_r4_intf = f"r2-eth{random.randint(21, 30)}"
+        r4_r2_intf = f"r4-eth{random.randint(0, 50)}"
+
+        lr1r2 = self.addLink(r1, r2, intfName1=r1_r2_intf, intfName2=r2_r1_intf)
         lr1r2[r1].addParams(ip = generate_IP_addr("r1-r2", "v6", f"{prefix}:1:") + "/64")
         lr1r2[r2].addParams(ip = generate_IP_addr("r2-r1", "v6", f"{prefix}:1:") + "/64")
 
-        lr2r3 = self.addLink(r2, r3)
+        lr2r3 = self.addLink(r2, r3, intfName1=r2_r3_intf, intfName2=r3_r2_intf)
         lr2r3[r2].addParams(ip = generate_IP_addr("r2-r3", "v6", f"{prefix}:2:") + "/64")
         lr2r3[r3].addParams(ip = generate_IP_addr("r3-r2", "v6", f"{prefix}:2:") + "/64")
 
-        lr2r4 = self.addLink(r2, r4)
+        lr2r4 = self.addLink(r2, r4, intfName1=r2_r4_intf, intfName2=r4_r2_intf)
         lr2r4[r2].addParams(ip = generate_IP_addr("r2-r4", "v6", f"{prefix}:3:") + "/64")
         lr2r4[r4].addParams(ip = generate_IP_addr("r4-r2", "v6", f"{prefix}:3:") + "/64")
 
@@ -97,10 +104,11 @@ net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
     net.start()
-    net["r1"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
-    net["r2"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
-    net["r3"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
-    net["r4"].cmd("vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit'")
+    remove_config_cmd = "vtysh -c 'configure terminal' -c 'no router ospf' -c 'no router ospf6' -c 'exit' -c 'write memory'"
+    net["r1"].cmd(remove_config_cmd)
+    net["r2"].cmd(remove_config_cmd)
+    net["r3"].cmd(remove_config_cmd)
+    net["r4"].cmd(remove_config_cmd)
 
     IPCLI(net)
 
@@ -118,5 +126,3 @@ except Exception as e:
 
 finally:
     net.stop()
-
-# vtysh -c "configure terminal" -c "router ospf" -c "network 8ec:e4bd:138d::/48 area 0.0.0.0" -c "exit" -c "exit" -c "write"
