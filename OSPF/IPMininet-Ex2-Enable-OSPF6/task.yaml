@@ -14,20 +14,20 @@ context: |-
         Hello, this is FRRouting (version 7.5).
         Copyright 1996-2005 Kunihiro Ishiguro, et al.
 
-        vagrant# configure terminal
-        vagrant(config)# router ospf6
-        vagrant(config-ospf6)# interface r1-eth0 area 0.0.0.0
-        vagrant(config-ospf6)# exit
-        vagrant(config)# exit
-        vagrant# write memory
+        router# configure terminal
+        router(config)# router ospf6
+        router(config-ospf6)# interface r1-eth0 area 0.0.0.0
+        router(config-ospf6)# exit
+        router(config)# exit
+        router# write memory
         Building Configuration...
         Configuration saved to /tmp/zebra_r4.cfg
         Configuration saved to /tmp/ospfd_r4.cfg
         Configuration saved to /tmp/ospf6d_r4.cfg
-        vagrant# exit
+        router# exit
         mininet> 
 
-    The main difference with IPv6 compared to IPv4 is that you have to perform the configuration for each interface. Look for the interfaces names and configure ospf6 on them so that every routers can communicate with the others. Again you can use 0.0.0.0 for the area.
+    The main difference with IPv6 compared to IPv4 is that you have to perform the configuration with ``interface`` instead of ``network`` for each interface. Look for the interfaces names and configure OSPF6 on them so that every routers can communicate with the others. Again you can use 0.0.0.0 for the area.
 environment_id: ipmininet
 environment_parameters:
     limits:
