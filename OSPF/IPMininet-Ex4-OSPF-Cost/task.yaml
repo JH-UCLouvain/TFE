@@ -5,7 +5,7 @@ context: |-
 
     .. image:: IPMininet-Ex4-OSPF-Cost/topology.png
 
-    Configure the interfaces costs so that the packets from r1 to r6 follow the path r1-r4-r5-r2-r3-r6 and inversely, the packets from r6 to r1 must follow the path r6-r3-r2-r1.
+    Configure the interfaces costs so that the packets from r1 to r6 follow the path r1-r4-r5-r2-r3-r6.
 environment_id: ipmininet
 environment_parameters:
     limits:

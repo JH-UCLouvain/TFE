@@ -1,0 +1,23 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure loopback interfaces. We will consider the following network topology :
+
+    .. image:: IPMininet-Ex5-OSPF-Loopback/topology.png
+
+    Each router can also have a loopback interface (often named ``lo``) that is a virtual interface that can be configured with a unique IP address. The particularity of a loopback address is that it can be reached from every interfaces of the router regardless of the subnets of these interfaces.
+    Consequently, each router can join the other routers easily with the loopback addresses. To configure a loopback address in VTYSH, you can go into the ``interface lo`` section and then execute the ``ip address <address>/<mask>`` command (``ipv6 address <address>/<mask>`` for IPv6). Configure the loopback address of each router from this network. The addresses that you must use will be provided with the ``getinstructions`` command.
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex5 - OSPF Loopback
+network_grading: false
+problems: {}
