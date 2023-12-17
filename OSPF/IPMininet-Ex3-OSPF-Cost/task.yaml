@@ -27,7 +27,7 @@ context: |-
         router# exit
         mininet> 
 
-    In this example, the cost to exit through the interface r1-eth0 is set to 10 with the command ``ip ospf cost <cost>`` (``ipv6 ospf6 cost <cost>`` for IPv6). For this exercices, look for the interfaces names and 
+    In this example, the cost to exit through the interface r1-eth0 is set to 10 with the command ``ip ospf cost <cost>`` (``ipv6 ospf6 cost <cost>`` for IPv6) in the interface section. For this exercices, look for the interfaces names and 
     configure the interfaces of r1 and r4 so that the packets from r1 to r4 follow the path r1-r2-r3-r4 and inversely, the packets from r4 to r1 must follow the path r4-r3-r2-r1.
 environment_id: ipmininet
 environment_parameters:
