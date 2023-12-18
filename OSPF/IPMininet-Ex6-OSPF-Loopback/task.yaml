@@ -17,6 +17,6 @@ environment_parameters:
 environment_type: docker-ssh
 file: ''
 input_random: 0
-name: IPMininet Ex6 - OSPF Loopback
+name: IPMininet Ex6 - OSPF Loopback interfaces
 network_grading: false
 problems: {}

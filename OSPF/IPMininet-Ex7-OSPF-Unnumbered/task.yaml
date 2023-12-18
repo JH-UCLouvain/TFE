@@ -1,0 +1,22 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure unnumbered interfaces. We will consider the following network topology :
+
+    .. image:: IPMininet-Ex7-OSPF-Unnumbered/topology.png
+
+
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex7 - OSPF Unnumbered interfaces
+network_grading: false
+problems: {}
