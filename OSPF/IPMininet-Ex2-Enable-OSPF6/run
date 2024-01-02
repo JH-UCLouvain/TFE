@@ -1,7 +1,0 @@
-#!/bin/python3
-# Author : Jeremy Holodiline
-
-import sys
-sys.path.insert(1, '/course/common/student/')
-from ipmininet_exercices import run_ipmininet_exercice
-run_ipmininet_exercice()

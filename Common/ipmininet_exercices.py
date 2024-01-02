@@ -15,7 +15,10 @@ class IPMininet_Exercice:
         self.n_success_tests = 0
         self.feedback = ""
 
-    def store_feedback(self, grade, result, feedback):
+    def send_feedback(self, grade=None, result=None, feedback=None):
+        if grade is None: grade = 100 if self.n_tests == 0 else ((self.n_success_tests / self.n_tests) * 100)
+        if result is None: result = "success" if grade == 100 else "failed"
+        if feedback is None: feedback = self.feedback
         if self.store_fdbk:
             with open("tmp/student/feedback.txt", "w") as f:
                 f.write(str(grade) + "\n")
@@ -26,13 +29,13 @@ class IPMininet_Exercice:
             print(f"Result : {result}")
             print(f"Feedback : {feedback}")
 
-    def addr_to_bin(addr):
+    def addr_to_bin(self, addr):
         addr_bin = ""
         if "." in addr: addr_bin = "".join(format(int(x), "08b") for x in addr.split("."))
         else: addr_bin = "".join(format(int(x, 16), "016b") for x in addr.split(":"))
         return addr_bin
 
-    def bin_to_addr(addr_bin):
+    def bin_to_addr(self, addr_bin):
         addr = ""
         if len(addr_bin) == 32: addr = ".".join(str(int(addr_bin[i:i+8], 2)) for i in range(0, 32, 8))
         else: addr = ":".join(format(int(addr_bin[i:i+16], 2), "x") for i in range(0, 128, 16))
@@ -98,28 +101,3 @@ def run_ipmininet_exercice():
     feedback.set_grade(float(lines[0].strip()))
     feedback.set_global_result(lines[1].strip())
     feedback.set_global_feedback("\n".join(lines[2:]))
-
-"""
-import sys
-sys.path.insert(1, '/course/common/student/')
-from ipmininet_exercices import run_ipmininet_exercice
-run_ipmininet_exercice()
-
-def generate_IP_addr_OLD(interface, version, prefix):
-    while True:
-        addr = ""
-        if version == "v4":
-            if prefix != "" and prefix[-1] != ".": prefix += "."
-            n_rand = 4 - (len(prefix.split(".")) - 1)
-            addr = prefix + ".".join(("%s" % random.randint(0, 255) for _ in range(n_rand)))
-            addr = addr.rstrip(".")
-        elif version == "v6":
-            if prefix != "" and prefix[-1] != ":": prefix += ":"
-            n_rand = 8 - (len(prefix.split(":")) - 1)
-            addr = prefix + ":".join(("%s" % format(random.randint(0, 0xffff), "x") for _ in range(n_rand)))
-            addr = addr.rstrip(":")
-        else: raise ValueError("IP version must be \"v4\" or \"v6\"")
-        if addr not in interface_addr.values():
-            interface_addr[interface] = addr
-            return addr
-"""

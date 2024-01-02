@@ -7,7 +7,7 @@ context: |-
 
     OSPF is a dynamic protocol that automatically build the routing tables of the devices based on the link-state packets exchanged. To configure OSPF we need the FRRouting protocol suite that can be used here through the VTYSH command interface.
 
-    Here is an example of the OSPF activation in a router with VTYSH:
+    Here is an example of a OSPF configuration in a router with VTYSH:
 
     .. code-block:: console
 
