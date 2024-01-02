@@ -1,14 +1,7 @@
 #!/bin/python3
 # Author : Jeremy Holodiline
 
-from inginious_container_api import feedback, ssh_student
-
-ssh_student.ssh_student(memory_limit=512)
-
-lines = []
-with open("student/kvm/feedback.txt", "r") as f:
-    lines = f.readlines()
-
-feedback.set_grade(float(lines[0].strip()))
-feedback.set_global_result(lines[1].strip())
-feedback.set_global_feedback("\n".join(lines[2:]))
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import run_ipmininet_exercice
+run_ipmininet_exercice()
