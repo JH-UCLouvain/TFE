@@ -7,7 +7,7 @@ context: |-
 
     OSPF is a dynamic protocol that automatically build the routing tables of the devices based on the link-state packets exchanged. To configure OSPF we need the FRRouting protocol suite that can be used here through the VTYSH command interface.
 
-    Here is an example of a OSPF configuration in a router with VTYSH:
+    Here is an example of an OSPF configuration in a router with VTYSH:
 
     .. code-block:: console
 
@@ -31,9 +31,8 @@ context: |-
 
     You can enter in a FRR environnement of a node by using the ``<node> vtysh`` command. After that you can enter your configuration commands, do a ``write memory`` command to save you configuration and then execute an ``exit`` command to return on the main IPMininet client (and eventually repeating that for other nodes).
     It's also possible to directly execute a FRR command without entering in the VTYSH client with the ``-c`` argument (e.g. ``r1 vtysh -c '<cmd>'``) or execute multiple commands one after the other with a single line command : ``r1 vtysh -c '<cmd1>' -c '<cmd2>' -c '<cmd3>'...``.
-    To enable OSPF, once in VTYSH, you first have to enter in the configuration mode with the ``configure terminal`` command. Then you have to enter in the OSPF section with ``router ospf``. After that you have to use the ``network <address>/<mask> area <address>`` command. This one will declare to the OSPF process and the network which IP addresses that match the subnet argument must be announced. For this exercices the routers IPv4 addresses are already configured. Look for them
-    and make sure that the address/mask that you will use in the command includes all interfaces. We will use ``0.0.0.0`` as area address. Apply this process for the 3 routers so that OSPF is activated everywhere and everyone can communicate with the others. The ``show running-config`` command could be useful to check the current configurations enabled on a device. If you want to remove a configuration you can use the
-    ``no`` prefix in front of the configuration command (e.g. ``no network ...``).
+    For this exercice you have to enable OSPF for every interfaces of every routers so that OSPF is activated everywhere and everyone can reach the others. For that, we invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6).
+    We will use ``0.0.0.0`` as area address. The ``show running-config`` command could be useful to check the current configurations enabled on a device. If you want to remove a configuration you can use the ``no`` prefix in front of the configuration command (e.g. ``no network ...``). The IP addresses and the interfaces names are randomly generated.
 environment_id: ipmininet
 environment_parameters:
     limits:

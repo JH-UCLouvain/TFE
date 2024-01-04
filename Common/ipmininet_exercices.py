@@ -89,6 +89,32 @@ class IPMininet_Exercice:
         else:
             self.feedback += f"Ping {src} -> {dst_name} failed : {output}\n"
 
+    def traceroute_test(self, src, dst_intf, expected_route, net):
+        self.n_tests += 1
+        dst_addr = self.intf_addr[dst_intf]
+        dst_name = dst_intf.split("-")[0]
+        output = ""
+        try:
+            output = net[src].cmd(f"traceroute -{self.ip_version} -q 1 {dst_addr}")
+        except Exception as e:
+            self.feedback += f"Traceroute {src} -> {dst_name} error : {e}\n"
+            return
+        real_route = []
+        lines_list = output.splitlines()[1:]
+        for line in lines_list:
+            real_route.append(line.split()[1])
+        if lines_list[0].split()[0] != "1":
+            self.feedback += f"Traceroute {src} -> {dst_name} failed : {output}\n"
+        elif len(real_route) != len(expected_route):
+            self.feedback += f"Traceroute {src} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
+        else:
+            for i in range(len(real_route)):
+                if real_route[i] != expected_route[i]:
+                    self.feedback += f"Traceroute {src} -> {dst_name} failed : expected route is {expected_route} but got {real_route}\n"
+                    return
+            self.n_success_tests += 1
+            self.feedback += f"Traceroute {src} -> {dst_name} success\n"
+
 def run_ipmininet_exercice():
     from inginious_container_api import feedback, ssh_student
 
