@@ -115,6 +115,20 @@ class IPMininet_Exercice:
             self.n_success_tests += 1
             self.feedback += f"Traceroute {src} -> {dst_name} success\n"
 
+    def output_test(self, node, cmd, expected, success_msg, failed_msg, net):
+        self.n_tests += 1
+        output = ""
+        try:
+            output = net[node].cmd(cmd)
+        except Exception as e:
+            self.feedback += f"{node} {cmd} error : {e}\n"
+            return
+        if expected in output:
+            self.n_success_tests += 1
+            self.feedback += f"Success : {success_msg}\n"
+        else:
+            self.feedback += f"Failed : {failed_msg}\n"
+
 def run_ipmininet_exercice():
     from inginious_container_api import feedback, ssh_student
 

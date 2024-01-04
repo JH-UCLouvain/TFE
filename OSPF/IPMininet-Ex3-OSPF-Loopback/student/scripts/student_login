@@ -1,0 +1,72 @@
+#!/bin/python3
+# Author : Jeremy Holodiline
+
+from ipmininet.iptopo import IPTopo
+from ipmininet.ipnet import IPNet
+from ipmininet.cli import IPCLI
+
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import IPMininet_Exercice
+ex = IPMininet_Exercice(6)
+
+class MyTopology(IPTopo):
+
+    def build(self, *args, **kwargs):
+
+        r1 = self.addRouter("r1")
+        r2 = self.addRouter("r2")
+        r3 = self.addRouter("r3")
+        r4 = self.addRouter("r4")
+
+        mask = 64
+        subnet = ex.generate_subnet_addr(mask)
+        lr1r2 = self.addLink(r1, r2, intfName1=ex.generate_intf_name("r1-r2"), intfName2=ex.generate_intf_name("r2-r1"))
+        lr1r2[r1].addParams(ip=ex.generate_intf_addr("r1-r2", subnet, mask) + f"/{mask}")
+        lr1r2[r2].addParams(ip=ex.generate_intf_addr("r2-r1", subnet, mask) + f"/{mask}")
+
+        mask = 64
+        subnet = ex.generate_subnet_addr(mask)
+        lr2r3 = self.addLink(r2, r3, intfName1=ex.generate_intf_name("r2-r3"), intfName2=ex.generate_intf_name("r3-r2"))
+        lr2r3[r2].addParams(ip=ex.generate_intf_addr("r2-r3", subnet, mask) + f"/{mask}")
+        lr2r3[r3].addParams(ip=ex.generate_intf_addr("r3-r2", subnet, mask) + f"/{mask}")
+
+        mask = 64
+        subnet = ex.generate_subnet_addr(mask)
+        lr3r4 = self.addLink(r3, r4, intfName1=ex.generate_intf_name("r3-r4"), intfName2=ex.generate_intf_name("r4-r3"))
+        lr3r4[r3].addParams(ip=ex.generate_intf_addr("r3-r4", subnet, mask) + f"/{mask}")
+        lr3r4[r4].addParams(ip=ex.generate_intf_addr("r4-r3", subnet, mask) + f"/{mask}")
+
+        routers = ["r1","r2","r3","r4"]
+        for r in routers:
+            mask = 64
+            ex.generate_intf_addr(f"{r}-lo", ex.generate_subnet_addr(mask), mask)
+
+        super(MyTopology, self).build(*args, **kwargs)
+
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
+try:
+    routers = ["r1","r2","r3","r4"]
+    for r in routers:
+        print(f"{r} must be configured with the loopback address : {ex.intf_addr[f'{r}-lo']}/128")
+
+    net.start()
+
+    IPCLI(net)
+
+    for r in routers:
+        ex.output_test(f"{r}", "vtysh -c 'show ipv6 ospf6 interface lo'", f"inet6: {ex.intf_addr[f'{r}-lo']}/128", f"{r} has the correct loopback address", f"{r} has not the correct loopback address", net)
+
+    for r_a in routers:
+        for r_b in routers:
+            if r_a != r_b:
+                ex.ping_test(f"{r_a}", f"{r_b}-lo", net)
+
+    ex.send_feedback()
+
+except Exception as e:
+    ex.send_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+
+finally:
+    net.stop()
