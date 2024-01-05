@@ -6,34 +6,10 @@ from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
 from ipmininet.router.config import RouterConfig
 
-def store_feedback(grade, result, feedback):
-    STORE = True
-    if STORE:
-        with open("tmp/student/feedback.txt", "w") as f:
-            f.write(str(grade) + "\n")
-            f.write(result + "\n")
-            f.write(feedback)
-    else:
-        print(f"Grade : {grade}")
-        print(f"Result : {result}")
-        print(f"Feedback : {feedback}")
-
-interface_addr = dict()
-
-def get_address(node, version, interface_name, net):
-    output = ""
-    try:
-        output = net[node].cmd(f"ip -{version} addr show dev {interface_name}")
-    except Exception as e:
-        raise ValueError(f"{node} ip -{version} addr show dev {interface_name} error : {e}")
-    address = ""
-    for line in output.splitlines():
-        inet = "inet"
-        if version == "6" : inet += "6"
-        if inet in line and "scope global" in line:
-            address = line.split()[1]
-            break
-    return address
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import IPMininet_Exercice
+ex = IPMininet_Exercice(6)
 
 class MyTopology(IPTopo):
 
@@ -48,45 +24,16 @@ class MyTopology(IPTopo):
         r3 = self.addRouter("r3", config=RouterConfig)
         r4 = self.addRouter("r4", config=RouterConfig)
 
-        self.addLink(h1, r1)
-        self.addLink(h2, r2)
-        self.addLink(h3, r3)
-        self.addLink(h4, r4)
-        self.addLink(r1, r2)
-        self.addLink(r2, r3)
-        self.addLink(r3, r4)
-        self.addLink(r1, r4)
+        self.addLink(h1, r1, intfName1=ex.generate_intf_name("h1-r1"), intfName2=ex.generate_intf_name("r1-h1"))
+        self.addLink(h2, r2, intfName1=ex.generate_intf_name("h2-r2"), intfName2=ex.generate_intf_name("r2-h2"))
+        self.addLink(h3, r3, intfName1=ex.generate_intf_name("h3-r3"), intfName2=ex.generate_intf_name("r3-h3"))
+        self.addLink(h4, r4, intfName1=ex.generate_intf_name("h4-r4"), intfName2=ex.generate_intf_name("r4-h4"))
+        self.addLink(r1, r2, intfName1=ex.generate_intf_name("r1-r2"), intfName2=ex.generate_intf_name("r2-r1"))
+        self.addLink(r2, r3, intfName1=ex.generate_intf_name("r2-r3"), intfName2=ex.generate_intf_name("r3-r2"))
+        self.addLink(r3, r4, intfName1=ex.generate_intf_name("r3-r4"), intfName2=ex.generate_intf_name("r4-r3"))
+        self.addLink(r1, r4, intfName1=ex.generate_intf_name("r1-r4"), intfName2=ex.generate_intf_name("r4-r1"))
 
         super(MyTopology, self).build(*args, **kwargs)
-
-class Test:
-
-    def __init__(self):
-        self.n_test = 0
-        self.n_success_test = 0
-        self.feedback = ""
-
-    def ping_test(self, src_name, dst_interface_name, net):
-        self.n_test += 1
-        dst_address = interface_addr[dst_interface_name]
-        dst_name = dst_interface_name.split("-")[0]
-        dst_IP_version = "6" if ":" in dst_address else "4"
-        output = ""
-        try:
-            output = net[src_name].cmd(f"ping -{dst_IP_version} -c 1 -W 1 {dst_address}")
-        except Exception as e:
-            self.feedback += f"Ping {src_name} -> {dst_name} error : {e}\n"
-            return
-        if " 0% packet loss" in output or " 0.0% packet loss" in output:
-            self.n_success_test += 1
-            self.feedback += f"Ping {src_name} -> {dst_name} success\n"
-        else:
-            self.feedback += f"Ping {src_name} -> {dst_name} failed : {output}\n"
-
-    def send_feedback(self):
-        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
-        result = "success" if grade == 100 else "failed"
-        store_feedback(grade, result, self.feedback)
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
@@ -95,39 +42,31 @@ try:
 
     IPCLI(net)
 
-    test = Test()
+    hosts = ("h1-r1", "h2-r2", "h3-r3", "h4-r4")
 
     hosts_have_addr = True
-    for host in ("h1-r1", "h2-r2", "h3-r3", "h4-r4"):
-        test.n_test += 1
+    for host in hosts:
+        ex.n_tests += 1
         host_name = host.split("-")[0]
-        addr = get_address(host_name, "6", f"{host_name}-eth0", net)
-        interface_addr[host] = addr.split("/")[0]
+        addr = ex.get_address(host_name, host, net)
+        ex.intf_addr[host] = addr.split("/")[0]
         if addr == "":
             hosts_have_addr = False
-            test.feedback += f"{host_name} has no address configured\n"
-        else : test.n_success_test += 1
+            ex.feedback += f"{host_name} has no IPv{ex.ip_version} address configured\n"
+        else : ex.n_success_tests += 1
 
     if hosts_have_addr:
-        test.ping_test("h1", "h2-r2", net)
-        test.ping_test("h1", "h3-r3", net)
-        test.ping_test("h1", "h4-r4", net)
+        for h_a in hosts:
+            for h_b in hosts:
+                h_a_name = h_a.split("-")[0]
+                h_b_name = h_b.split("-")[0]
+                if h_a_name != h_b_name:
+                    ex.ping_test(h_a_name, h_b, net)
 
-        test.ping_test("h2", "h1-r1", net)
-        test.ping_test("h2", "h3-r3", net)
-        test.ping_test("h2", "h4-r4", net)
-
-        test.ping_test("h3", "h1-r1", net)
-        test.ping_test("h3", "h2-r2", net)
-        test.ping_test("h3", "h4-r4", net)
-
-        test.ping_test("h4", "h1-r1", net)
-        test.ping_test("h4", "h2-r2", net)
-        test.ping_test("h4", "h3-r3", net)
-    test.send_feedback()
+    ex.send_feedback()
 
 except Exception as e:
-    store_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+    ex.send_feedback(0, "crash", f"Error from the ipmininet script : {e}")
 
 finally:
     net.stop()

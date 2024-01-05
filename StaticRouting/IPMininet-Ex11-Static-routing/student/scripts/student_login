@@ -8,42 +8,15 @@ from ipmininet.router.config import RouterConfig
 
 import random
 
-def store_feedback(grade, result, feedback):
-    STORE = True
-    if STORE:
-        with open("tmp/student/feedback.txt", "w") as f:
-            f.write(str(grade) + "\n")
-            f.write(result + "\n")
-            f.write(feedback)
-    else:
-        print(f"Grade : {grade}")
-        print(f"Result : {result}")
-        print(f"Feedback : {feedback}")
-
-interface_addr = dict()
-
-def generate_IP_addr(interface, version, prefix):
-    while True:
-        addr = ""
-        if version == "v4":
-            if prefix != "" and prefix[-1] != ".": prefix += "."
-            n_rand = 4 - (len(prefix.split(".")) - 1)
-            addr = prefix + ".".join(("%s" % random.randint(0, 255) for _ in range(n_rand)))
-            addr = addr.rstrip(".")
-        elif version == "v6":
-            if prefix != "" and prefix[-1] != ":": prefix += ":"
-            n_rand = 8 - (len(prefix.split(":")) - 1)
-            addr = prefix + ":".join(("%s" % format(random.randint(0, 0xffff), "x") for _ in range(n_rand)))
-            addr = addr.rstrip(":")
-        else: raise ValueError("IP version must be \"v4\" or \"v6\"")
-        if addr not in interface_addr.values():
-            interface_addr[interface] = addr
-            return addr
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import IPMininet_Exercice
+ex = IPMininet_Exercice(6)
 
 class MyTopology(IPTopo):
 
     def build(self, *args, **kwargs):
-        
+
         h1 = self.addHost("h1", defaultRoute=None)
         h2 = self.addHost("h2", defaultRoute=None)
         r1 = self.addRouter("r1", config=RouterConfig)
@@ -52,85 +25,15 @@ class MyTopology(IPTopo):
         r4 = self.addRouter("r4", config=RouterConfig)
         r5 = self.addRouter("r5", config=RouterConfig)
 
-        lh1r1 = self.addLink(h1, r1)
-        lh1r1[h1].addParams(ip = generate_IP_addr("h1-r1", "v6", "2001:db8:1341:1:") + "/64")
-        lh1r1[r1].addParams(ip = generate_IP_addr("r1-h1", "v6", "2001:db8:1341:1:") + "/64")
-        
-        lr1r2 = self.addLink(r1, r2)
-        lr1r2[r1].addParams(ip = generate_IP_addr("r1-r2", "v6", "2001:db8:1341:2:") + "/64")
-        lr1r2[r2].addParams(ip = generate_IP_addr("r2-r1", "v6", "2001:db8:1341:2:") + "/64")
-        
-        lr2r4 = self.addLink(r2, r4)
-        lr2r4[r2].addParams(ip = generate_IP_addr("r2-r4", "v6", "2001:db8:1341:3:") + "/64")
-        lr2r4[r4].addParams(ip = generate_IP_addr("r4-r2", "v6", "2001:db8:1341:3:") + "/64")
-        
-        lr1r3 = self.addLink(r1, r3)
-        lr1r3[r1].addParams(ip = generate_IP_addr("r1-r3", "v6", "2001:db8:1341:4:") + "/64")
-        lr1r3[r3].addParams(ip = generate_IP_addr("r3-r1", "v6", "2001:db8:1341:4:") + "/64")
-        
-        lr3r4 = self.addLink(r3, r4)
-        lr3r4[r3].addParams(ip = generate_IP_addr("r3-r4", "v6", "2001:db8:1341:5:") + "/64")
-        lr3r4[r4].addParams(ip = generate_IP_addr("r4-r3", "v6", "2001:db8:1341:5:") + "/64")
-        
-        lr4r5 = self.addLink(r4, r5)
-        lr4r5[r4].addParams(ip = generate_IP_addr("r4-r5", "v6", "2001:db8:1341:6:") + "/64")
-        lr4r5[r5].addParams(ip = generate_IP_addr("r5-r4", "v6", "2001:db8:1341:6:") + "/64")
-        
-        lh2r5 = self.addLink(r5, h2)
-        lh2r5[h2].addParams(ip = generate_IP_addr("h2-r5", "v6", "2001:db8:1341:7:") + "/64")
-        lh2r5[r5].addParams(ip = generate_IP_addr("r5-h2", "v6", "2001:db8:1341:7:") + "/64")
+        ex.create_link(self, h1, r1, 64)
+        ex.create_link(self, r1, r2, 64)
+        ex.create_link(self, r2, r4, 64)
+        ex.create_link(self, r1, r3, 64)
+        ex.create_link(self, r3, r4, 64)
+        ex.create_link(self, r4, r5, 64)
+        ex.create_link(self, r5, h2, 64)
 
         super(MyTopology, self).build(*args, **kwargs)
-
-class Test:
-
-    def __init__(self):
-        self.n_test = 0
-        self.n_success_test = 0
-        self.feedback = ""
-
-    def ping_test(self, src_name, dst_interface_name, net):
-        self.n_test += 1
-        dst_address = interface_addr[dst_interface_name]
-        dst_name = dst_interface_name.split("-")[0]
-        dst_IP_version = "6" if ":" in dst_address else "4"
-        output = ""
-        try:
-            output = net[src_name].cmd(f"ping -{dst_IP_version} -c 1 -W 1 {dst_address}")
-        except Exception as e:
-            self.feedback += f"Ping {src_name} -> {dst_name} error : {e}\n"
-            return
-        if " 0% packet loss" in output or " 0.0% packet loss" in output:
-            self.n_success_test += 1
-            self.feedback += f"Ping {src_name} -> {dst_name} success\n"
-        else:
-            self.feedback += f"Ping {src_name} -> {dst_name} failed : {output}\n"
-
-    def route_test(self, src_name, version, dst, way, must_be, net):
-        self.n_test += 1
-        output = ""
-        try:
-            output = net[src_name].cmd(f"ip -{version} route")
-        except Exception as e:
-            self.feedback += f"Ip route {src_name} error : {e}\n"
-            return
-        route = f"{dst} via {way}"
-        route_is_there = True if route in output else False
-        if route_is_there and must_be:
-            self.n_success_test += 1
-            self.feedback += f"Ip route {route} is in the {src_name} routing table : success\n"
-        elif (not route_is_there) and must_be:
-            self.feedback += f"Ip route {route} is not in the {src_name} routing table : failed : it must be added\n"
-        elif route_is_there and (not must_be):
-            self.feedback += f"Ip route {route} is in the {src_name} routing table : failed : it must be removed\n"
-        elif (not route_is_there) and (not must_be):
-            self.n_success_test += 1
-            self.feedback += f"Ip route {route} is not in the {src_name} routing table : success\n"
-
-    def send_feedback(self):
-        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
-        result = "success" if grade == 100 else "failed"
-        store_feedback(grade, result, self.feedback)
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
@@ -139,28 +42,27 @@ try:
     cafe_route = "2001:cafe:1341:" + str(format(random.randint(1, 0xffff), "x")) + "::"
 
     net.start()
-    net["h1"].cmd("ip -6 route add default via " + interface_addr["r1-h1"])
-    net["h2"].cmd("ip -6 route add default via " + interface_addr["r5-h2"])
-    net["r1"].cmd("ip -6 route add " + bad_route + "/64 via " + interface_addr["r2-r1"])
-    net["r4"].cmd("ip -6 route add " + cafe_route + "/64 via " + interface_addr["r2-r4"])
-    net["r2"].cmd("ip -6 route add " + interface_addr["h1-r1"] + "/64 via " + interface_addr["r1-r2"])
-    net["r2"].cmd("ip -6 route add " + interface_addr["h2-r5"] + "/64 via " + interface_addr["r4-r2"])
-    net["r3"].cmd("ip -6 route add " + interface_addr["h1-r1"] + "/64 via " + interface_addr["r1-r3"])
-    net["r3"].cmd("ip -6 route add " + interface_addr["h2-r5"] + "/64 via " + interface_addr["r4-r3"])
-    net["r4"].cmd("ip -6 route add " + interface_addr["h2-r5"] + "/64 via " + interface_addr["r5-r4"])
-    net["r5"].cmd("ip -6 route add default via " + interface_addr["r4-r5"])
+    net["h1"].cmd("ip -6 route add default via " + ex.intf_addr["r1-h1"])
+    net["h2"].cmd("ip -6 route add default via " + ex.intf_addr["r5-h2"])
+    net["r1"].cmd("ip -6 route add " + bad_route + "/64 via " + ex.intf_addr["r2-r1"])
+    net["r4"].cmd("ip -6 route add " + cafe_route + "/64 via " + ex.intf_addr["r2-r4"])
+    net["r2"].cmd("ip -6 route add " + ex.intf_addr["h1-r1"] + "/64 via " + ex.intf_addr["r1-r2"])
+    net["r2"].cmd("ip -6 route add " + ex.intf_addr["h2-r5"] + "/64 via " + ex.intf_addr["r4-r2"])
+    net["r3"].cmd("ip -6 route add " + ex.intf_addr["h1-r1"] + "/64 via " + ex.intf_addr["r1-r3"])
+    net["r3"].cmd("ip -6 route add " + ex.intf_addr["h2-r5"] + "/64 via " + ex.intf_addr["r4-r3"])
+    net["r4"].cmd("ip -6 route add " + ex.intf_addr["h2-r5"] + "/64 via " + ex.intf_addr["r5-r4"])
+    net["r5"].cmd("ip -6 route add default via " + ex.intf_addr["r4-r5"])
 
     IPCLI(net)
 
-    test = Test()
-    test.ping_test("h1", "h2-r5", net)
-    test.ping_test("h2", "h1-r1", net)
-    test.route_test("r1", "6", bad_route + "/64", interface_addr["r2-r1"], False, net)
-    test.route_test("r4", "6", cafe_route + "/64", interface_addr["r2-r4"], False, net)
-    test.send_feedback()
+    ex.ping_test("h1", "h2-r5", net)
+    ex.ping_test("h2", "h1-r1", net)
+    ex.route_test("r1", bad_route + "/64", ex.intf_addr["r2-r1"], False, net)
+    ex.route_test("r4", cafe_route + "/64", ex.intf_addr["r2-r4"], False, net)
+    ex.send_feedback()
 
 except Exception as e:
-    store_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+    ex.send_feedback(0, "crash", f"Error from the ipmininet script : {e}")
 
 finally:
     net.stop()

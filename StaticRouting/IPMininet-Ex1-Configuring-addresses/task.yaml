@@ -5,7 +5,7 @@ context: |-
 
     .. image:: IPMininet-Ex1-Configuring-addresses/topology.png
 
-    The command to configure an address is : ``<node> ip -<version> addr add <address>/<prefixlen> dev <interface>``. First you will configure an IPv6 address on the interface ``h1-eth0`` of host ``h1``. To apply this, enter the command ``h1 ip -6 addr add <address>/<prefixlen> dev h1-eth0``. The address that you must use can be revealed by entering our custom command ``getaddress`` during the ssh session and we will use a ``/64`` subnet. Then you will configure in the same way the interface ``h2-eth0`` of host ``h2``.
+    The command to configure an address is : ``<node> ip -<version> addr add <address>/<prefixlen> dev <interface>``. Configure the IP addresses of h1 and h2 so that the two hosts can reach each other. The addresses that you must use will be showed during the ssh session in the terminal. The interfaces names can be found with the ``links`` command.
 environment_id: ipmininet
 environment_parameters:
     limits:

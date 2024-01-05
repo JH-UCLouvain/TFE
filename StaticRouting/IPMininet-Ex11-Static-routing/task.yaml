@@ -5,7 +5,7 @@ context: |-
 
     .. image:: IPMininet-Ex11-Static-routing/topology.png
 
-    Some static route(s) are incorrect in this network (you can verify it with a ``pingall``). Find the mistake(s) and correct them so that each host can reach the other hosts. Also find the routes  with the "bad" and "cafe" addresses and remove them. The addresses are already configured, try to find them by yourself with the Mininet commands.
+    Some static route(s) are incorrect in this network (you can verify it with a ``pingall``). Find the mistake(s) and correct them so that each host can reach the other hosts. Also find the routes with the "bad" and "cafe" addresses and remove them. The addresses are already configured, try to find them by yourself with the Mininet commands.
 environment_id: ipmininet
 environment_parameters:
     limits:

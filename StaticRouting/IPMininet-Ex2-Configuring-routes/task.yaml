@@ -69,7 +69,7 @@ context: |-
 
     To delete this route you can use the command ``r1 ip -6 route del 2001:bad:1341:1::/64 via 2001:db8:1341:12::2``
 
-    Now you can apply these commands by starting the exercice with the ssh session and follow the steps decribed above. The topology is the same but the IP addresses will be different (you can use the command ``<node> ip -6 addr`` to get them).
+    Now you can apply these commands by starting the exercice with the ssh session and follow the steps decribed above. The topology is the same but the IP addresses and the interfaces names will be randomly generated.
 environment_id: ipmininet
 environment_parameters:
     limits:

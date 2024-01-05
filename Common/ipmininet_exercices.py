@@ -82,6 +82,21 @@ class IPMininet_Exercice:
         link[node1].addParams(ip=self.generate_intf_addr(f"{name1}-{name2}", subnet, mask) + f"/{mask}")
         link[node2].addParams(ip=self.generate_intf_addr(f"{name2}-{name1}", subnet, mask) + f"/{mask}")
 
+    def get_address(self, node, intf, net):
+        output = ""
+        intf_name = self.intf_names[intf]
+        try:
+            output = net[node].cmd(f"ip -{self.ip_version} addr show dev {intf_name}")
+        except Exception as e:
+            raise ValueError(f"{node} ip -{self.ip_version} addr show dev {intf_name} error : {e}")
+        address = ""
+        for line in output.splitlines():
+            inet = "inet" if self.ip_version == "4" else "inet6"
+            if inet in line and "scope global" in line:
+                address = line.split()[1]
+                break
+        return address
+
     def ping_test(self, src, dst_intf, net):
         self.n_tests += 1
         dst_addr = self.intf_addr[dst_intf]
@@ -137,6 +152,27 @@ class IPMininet_Exercice:
             self.feedback += f"Success : {success_msg}\n"
         else:
             self.feedback += f"Failed : {failed_msg}\n"
+
+    def route_test(self, src, dst_addr, way, expected, net):
+        self.n_tests += 1
+        output = ""
+        try:
+            output = net[src].cmd(f"ip -{self.ip_version} route")
+        except Exception as e:
+            self.feedback += f"Ip route {src} error : {e}\n"
+            return
+        route = f"{dst_addr} via {way}"
+        route_is_there = True if route in output else False
+        if route_is_there and expected:
+            self.n_success_tests += 1
+            self.feedback += f"Ip route {route} is in the {src} routing table : success\n"
+        elif (not route_is_there) and expected:
+            self.feedback += f"Ip route {route} is not in the {src} routing table : failed : it must be added\n"
+        elif route_is_there and (not expected):
+            self.feedback += f"Ip route {route} is in the {src} routing table : failed : it must be removed\n"
+        elif (not route_is_there) and (not expected):
+            self.n_success_tests += 1
+            self.feedback += f"Ip route {route} is not in the {src} routing table : success\n"
 
 def run_ipmininet_exercice():
     from inginious_container_api import feedback, ssh_student
