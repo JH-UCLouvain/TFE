@@ -90,7 +90,7 @@ context: |-
           2  r2 (2001:db8:1341:12::2)  0.056 ms  0.032 ms  0.029 ms
           3  h2 (2001:db8:1341:2::b)  0.052 ms  0.026 ms  0.025 ms
 
-    These commands could be usefull for later exercices. You are free to try these commands by yourself with the ssh session. The topology is the same but the IP addresses will be different during the ssh session.
+    These commands could be usefull for later exercices. You are free to try these commands by yourself with the ssh session. The topology is the same but the IP addresses and the interfaces names are randomly generated.
 environment_id: ipmininet
 environment_parameters:
     limits:

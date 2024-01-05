@@ -19,23 +19,9 @@ class MyTopology(IPTopo):
         r3 = self.addRouter("r3")
         r4 = self.addRouter("r4")
 
-        mask = 64
-        subnet = ex.generate_subnet_addr(mask)
-        lr1r2 = self.addLink(r1, r2, intfName1=ex.generate_intf_name("r1-r2"), intfName2=ex.generate_intf_name("r2-r1"))
-        lr1r2[r1].addParams(ip=ex.generate_intf_addr("r1-r2", subnet, mask) + f"/{mask}")
-        lr1r2[r2].addParams(ip=ex.generate_intf_addr("r2-r1", subnet, mask) + f"/{mask}")
-
-        mask = 64
-        subnet = ex.generate_subnet_addr(mask)
-        lr2r3 = self.addLink(r2, r3, intfName1=ex.generate_intf_name("r2-r3"), intfName2=ex.generate_intf_name("r3-r2"))
-        lr2r3[r2].addParams(ip=ex.generate_intf_addr("r2-r3", subnet, mask) + f"/{mask}")
-        lr2r3[r3].addParams(ip=ex.generate_intf_addr("r3-r2", subnet, mask) + f"/{mask}")
-
-        mask = 64
-        subnet = ex.generate_subnet_addr(mask)
-        lr3r4 = self.addLink(r3, r4, intfName1=ex.generate_intf_name("r3-r4"), intfName2=ex.generate_intf_name("r4-r3"))
-        lr3r4[r3].addParams(ip=ex.generate_intf_addr("r3-r4", subnet, mask) + f"/{mask}")
-        lr3r4[r4].addParams(ip=ex.generate_intf_addr("r4-r3", subnet, mask) + f"/{mask}")
+        ex.create_link(self, r1, r2, 64)
+        ex.create_link(self, r2, r3, 64)
+        ex.create_link(self, r3, r4, 64)
 
         routers = ["r1","r2","r3","r4"]
         for r in routers:

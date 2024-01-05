@@ -8,7 +8,7 @@ class IPMininet_Exercice:
     def __init__(self, ip_version, store_fdbk=True):
         self.ip_version = ip_version
         self.store_fdbk = store_fdbk
-        self.subnet_addr = set()
+        self.subnet_addr = dict()
         self.intf_addr = dict()
         self.intf_names = dict()
         self.n_tests = 0
@@ -47,11 +47,12 @@ class IPMininet_Exercice:
             n_bits = 32-mask if self.ip_version == 4 else 128-mask
             addr_bin = addr_bin + "".join("0" for _ in range(n_bits))
             is_new = True
-            for sub_addr in self.subnet_addr:
-                if addr_bin[:mask] == self.addr_to_bin(sub_addr)[:mask]: is_new = False
+            for sub_addr, sub_mask in self.subnet_addr.items():
+                sub_addr_bin = self.addr_to_bin(sub_addr)
+                if addr_bin[:mask] == sub_addr_bin[:mask] or addr_bin[:sub_mask] == sub_addr_bin[:sub_mask]: is_new = False
             if is_new:
                 addr = self.bin_to_addr(addr_bin)
-                self.subnet_addr.add(addr)
+                self.subnet_addr[addr] = mask
                 return addr
 
     def generate_intf_addr(self, intf, subnet_addr, mask):
@@ -72,6 +73,14 @@ class IPMininet_Exercice:
             if intf_name not in self.intf_names:
                 self.intf_names[intf] = intf_name
                 return intf_name
+
+    def create_link(self, iptopo_obj, node1, node2, mask):
+        subnet = self.generate_subnet_addr(mask)
+        name1 = node1.node
+        name2 = node2.node
+        link = iptopo_obj.addLink(node1, node2, intfName1=self.generate_intf_name(f"{name1}-{name2}"), intfName2=self.generate_intf_name(f"{name2}-{name1}"))
+        link[node1].addParams(ip=self.generate_intf_addr(f"{name1}-{name2}", subnet, mask) + f"/{mask}")
+        link[node2].addParams(ip=self.generate_intf_addr(f"{name2}-{name1}", subnet, mask) + f"/{mask}")
 
     def ping_test(self, src, dst_intf, net):
         self.n_tests += 1
