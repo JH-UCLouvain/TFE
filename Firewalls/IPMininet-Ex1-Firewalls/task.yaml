@@ -7,9 +7,9 @@ context: |-
 
     For that, you can use the ``iptables`` (``ip6tables`` for IPv6) command to configure firewalls. We will consider the 3 main following "chains" for the firewall rules : ``INPUT``, ``OUTPUT`` and ``FORWARD`` that respectively concern the incoming traffic, the outgoing traffic and the incoming traffic that must be forwarded to an other destination. The main actions that can be applied are ``ACCEPT`` and ``DROP``.
 
-    There are many possible arguments but here are most common ones. ``-L`` can list the current installed rules, ``-F`` removes all current installed rules, ``-A`` adds a specific rule and ``-D`` removes a specific rule. ``-s``, ``-d``, ``-sport``, ``-dport`` allows to specify source/destination addresses and ports and ``-p`` a protocol.
+    There are many possible arguments but here are the most common ones. ``-L`` can list the current installed rules, ``-F`` removes all current installed rules, ``-A`` adds a specific rule and ``-D`` removes a specific rule. ``-s``, ``-d``, ``-sport``, ``-dport`` allows to specify source/destination addresses and ports and ``-p`` a protocol.
 
-    For example, the command to add a rule that drops all incoming TCP packets on port 65000 of h1 would be : ``h1 ip6tables -A INPUT -p tcp --dport 65000 -j DROP``. For this exercice you have to use ``ip6tables`` commands to apply the instructions that you can get by entering our custom command ``instructions``.
+    For example, the command to add a rule that drops all incoming TCP packets on port 65000 of h1 would be : ``h1 iptables -A INPUT -p tcp --dport 65000 -j DROP``. For this exercice, apply on this network the instructions that will be showed in the terminal during the exercice.
 environment_id: ipmininet
 environment_parameters:
     limits:

@@ -5,7 +5,7 @@ context: |-
 
     .. image:: IPMininet-Ex2-Firewalls/topology.png
 
-    In this network the host ``h4`` has been identified as malicious. Configure the rules by using ``ip6tables`` on the other hosts that will drop all packets sent and received from ``h4``.
+    In this network the host ``h4`` has been identified as malicious. Configure the rules on the other hosts that will drop all packets sent and received from ``h4``.
 environment_id: ipmininet
 environment_parameters:
     limits:
