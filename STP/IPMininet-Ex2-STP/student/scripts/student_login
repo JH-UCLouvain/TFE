@@ -7,17 +7,10 @@ from ipmininet.cli import IPCLI
 
 import random
 
-def store_feedback(grade, result, feedback):
-    STORE = True
-    if STORE:
-        with open("tmp/student/feedback.txt", "w") as f:
-            f.write(str(grade) + "\n")
-            f.write(result + "\n")
-            f.write(feedback)
-    else:
-        print(f"Grade : {grade}")
-        print(f"Result : {result}")
-        print(f"Feedback : {feedback}")
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import IPMininet_Exercice
+ex = IPMininet_Exercice(6)
 
 class MyTopology(IPTopo):
 
@@ -27,7 +20,6 @@ class MyTopology(IPTopo):
         s_var = {}
         s_num = list(range(51,100))
         s_prio = list(range(1,50))
-
         for var_name in s_var_names:
             rand_s_num = random.choice(s_num)
             rand_s_prio = random.choice(s_prio)
@@ -35,49 +27,19 @@ class MyTopology(IPTopo):
             s_num.remove(rand_s_num)
             s_prio.remove(rand_s_prio)
 
-        self.addLink(s_var["a"], s_var["b"])
-        self.addLink(s_var["a"], s_var["c"])
-        self.addLink(s_var["b"], s_var["c"])
-        self.addLink(s_var["b"], s_var["e"])
-        self.addLink(s_var["c"], s_var["e"])
-        self.addLink(s_var["c"], s_var["d"])
-        self.addLink(s_var["d"], s_var["f"])
-        self.addLink(s_var["e"], s_var["f"])
+        ex.create_link_switch(self, s_var["a"], s_var["b"])
+        ex.create_link_switch(self, s_var["a"], s_var["c"])
+        ex.create_link_switch(self, s_var["b"], s_var["c"])
+        ex.create_link_switch(self, s_var["b"], s_var["e"])
+        ex.create_link_switch(self, s_var["c"], s_var["e"])
+        ex.create_link_switch(self, s_var["c"], s_var["d"])
+        ex.create_link_switch(self, s_var["d"], s_var["f"])
+        ex.create_link_switch(self, s_var["e"], s_var["f"])
 
         super(MyTopology, self).build(*args, **kwargs)
 
-class Test:
-
-    def __init__(self):
-        self.n_test = 0
-        self.n_success_test = 0
-        self.feedback = ""
-        self.correct_answer = ""
-        for s in net.switches:
-            s_name = s.name
-            lines = net[s_name].cmd(f"brctl showstp {s_name}").splitlines()
-            if lines[1].split()[2] == lines[2].split()[2]:
-                self.correct_answer = s_name
-                break
-
-    def compare_answer_test(self, student_answer):
-        self.n_test += 1
-        if student_answer == self.correct_answer:
-            self.n_success_test += 1
-            self.feedback += "Success\n"
-        else:
-            self.feedback += f"Failed : the correct answer was {self.correct_answer} but got {student_answer}\n"
-
-    def send_feedback(self):
-        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
-        result = "success" if grade == 100 else "failed"
-        store_feedback(grade, result, self.feedback)
-
-student_answer = []
-
 def answer(cli, args):
-    if args == "": student_answer.append("no answer")
-    else: student_answer.append(args)
+    ex.student_answer = args
 
 net = IPNet(topo=MyTopology())
 
@@ -88,14 +50,18 @@ try:
 
     IPCLI(net)
 
-    if len(student_answer) == 0: student_answer.append("no answer")
+    for s in net.switches:
+        s_name = s.name
+        lines = net[s_name].cmd(f"brctl showstp {s_name}").splitlines()
+        if lines[1].split()[2] == lines[2].split()[2]:
+            ex.correct_answer = s_name
+            break
 
-    test = Test()
-    test.compare_answer_test(student_answer[0])
-    test.send_feedback()
+    ex.compare_answer_test()
+    ex.send_feedback()
 
 except Exception as e:
-    store_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+    ex.send_feedback(0, "crash", f"Error from the ipmininet script : {e}")
 
 finally:
     net.stop()

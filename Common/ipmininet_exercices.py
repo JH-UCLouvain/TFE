@@ -8,12 +8,14 @@ class IPMininet_Exercice:
     def __init__(self, ip_version, store_fdbk=True):
         self.ip_version = ip_version
         self.store_fdbk = store_fdbk
-        self.subnet_addr = dict()
-        self.intf_addr = dict()
-        self.intf_names = dict()
         self.n_tests = 0
         self.n_success_tests = 0
         self.feedback = ""
+        self.subnet_addr = dict()
+        self.intf_addr = dict()
+        self.intf_names = dict()
+        self.correct_answer = ""
+        self.student_answer = ""
 
     def send_feedback(self, grade=None, result=None, feedback=None):
         if grade is None: grade = 100 if self.n_tests == 0 else ((self.n_success_tests / self.n_tests) * 100)
@@ -81,6 +83,9 @@ class IPMininet_Exercice:
         link = iptopo_obj.addLink(node1, node2, intfName1=self.generate_intf_name(f"{name1}-{name2}"), intfName2=self.generate_intf_name(f"{name2}-{name1}"))
         link[node1].addParams(ip=self.generate_intf_addr(f"{name1}-{name2}", subnet, mask) + f"/{mask}")
         link[node2].addParams(ip=self.generate_intf_addr(f"{name2}-{name1}", subnet, mask) + f"/{mask}")
+
+    def create_link_switch(self, iptopo_obj, node1, node2):
+        iptopo_obj.addLink(node1, node2, intfName1=self.generate_intf_name(f"{node1}-{node2}"), intfName2=self.generate_intf_name(f"{node2}-{node1}"))
 
     def get_address(self, node, intf, net):
         output = ""
@@ -173,6 +178,15 @@ class IPMininet_Exercice:
         elif (not route_is_there) and (not expected):
             self.n_success_tests += 1
             self.feedback += f"Ip route {route} is not in the {src} routing table : success\n"
+
+    def compare_answer_test(self):
+        self.n_tests += 1
+        if self.student_answer == self.correct_answer:
+            self.n_success_tests += 1
+            self.feedback += "Success\n"
+        else:
+            student_str = "no answer" if self.student_answer == "" else self.student_answer
+            self.feedback += f"Failed : the correct answer was {self.correct_answer} but got {student_str}\n"
 
 def run_ipmininet_exercice():
     from inginious_container_api import feedback, ssh_student
