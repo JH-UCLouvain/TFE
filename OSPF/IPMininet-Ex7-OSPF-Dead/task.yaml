@@ -1,0 +1,22 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure OSPF dead intervals. We will consider the following network topology :
+
+    .. image:: IPMininet-Ex7-OSPF-Dead/topology.png
+
+    On an interface, the dead interval is the number of seconds it takes before the neighbors are considering the router as down. Configure the dead intervals of the two interfaces to 7 seconds. We invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6).
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex7 - OSPF Dead intervals
+network_grading: false
+problems: {}
