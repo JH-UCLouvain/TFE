@@ -5,7 +5,7 @@ context: |-
 
     .. image:: IPMininet-Ex4-OSPF-Unnumbered/topology.png
 
-
+    Unnumbered interfaces are interfaces that can use the IP address from an other interface of the router (typically the loopback interface). Configure the addresses of the physical interfaces with the addresses of the loopback interfaces and then configure the interfaces to be unumbered. For that you have to enable the "point-to-point" configuration on each interface. We invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6).
 environment_id: ipmininet
 environment_parameters:
     limits:

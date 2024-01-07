@@ -47,7 +47,7 @@ class IPMininet_Exercice:
         while True:
             addr_bin = "".join(random.choice("01") for _ in range(mask))
             n_bits = 32-mask if self.ip_version == 4 else 128-mask
-            addr_bin = addr_bin + "".join("0" for _ in range(n_bits))
+            if n_bits > 0: addr_bin = addr_bin + "".join("0" for _ in range(n_bits))
             is_new = True
             for sub_addr, sub_mask in self.subnet_addr.items():
                 sub_addr_bin = self.addr_to_bin(sub_addr)
@@ -59,12 +59,15 @@ class IPMininet_Exercice:
 
     def generate_intf_addr(self, intf, subnet_addr, mask):
         while True:
-            addr_bin = self.addr_to_bin(subnet_addr)
+            addr = ""
             n_bits = 32-mask if self.ip_version == 4 else 128-mask
-            fixed = addr_bin[:-n_bits]
-            generated = "".join(random.choice("01") for _ in range(n_bits))
-            addr_bin = fixed + generated
-            addr = self.bin_to_addr(addr_bin)
+            if n_bits > 0:
+                addr_bin = self.addr_to_bin(subnet_addr)
+                fixed = addr_bin[:-n_bits]
+                generated = "".join(random.choice("01") for _ in range(n_bits))
+                addr_bin = fixed + generated
+                addr = self.bin_to_addr(addr_bin)
+            else : addr = subnet_addr
             if addr not in self.intf_addr.values():
                 self.intf_addr[intf] = addr
                 return addr

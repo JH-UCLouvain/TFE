@@ -25,7 +25,7 @@ class MyTopology(IPTopo):
 
         routers = ["r1","r2","r3","r4"]
         for r in routers:
-            mask = 64
+            mask = 128
             ex.generate_intf_addr(f"{r}-lo", ex.generate_subnet_addr(mask), mask)
 
         super(MyTopology, self).build(*args, **kwargs)

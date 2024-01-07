@@ -7,7 +7,7 @@ context: |-
 
     Each router can also have a loopback interface (often named ``lo``) that is a virtual interface that can be configured with a unique IP address. The particularity of a loopback address is that it can be reached from every interfaces of the router regardless of the subnets of these interfaces.
     Consequently, each router can join the other routers easily with the loopback addresses. Configure the loopback address of each router from this network. We invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6). The addresses that you must use will be showed during the exercice in the terminal.
-    Don't forget to enable OSPF on the loopback interfaces (as usual you can use 0.0.0.0 as area).
+    Don't forget to enable OSPF on the loopback interfaces (as usual you can use 0.0.0.0 as area) so that each router can reach the other routers with their loopback addresses.
 environment_id: ipmininet
 environment_parameters:
     limits:

@@ -5,40 +5,10 @@ from ipmininet.iptopo import IPTopo
 from ipmininet.ipnet import IPNet
 from ipmininet.cli import IPCLI
 
-import random
-
-def store_feedback(grade, result, feedback):
-    STORE = False #TO Change
-    if STORE:
-        with open("tmp/student/feedback.txt", "w") as f:
-            f.write(str(grade) + "\n")
-            f.write(result + "\n")
-            f.write(feedback)
-    else:
-        print(f"Grade : {grade}")
-        print(f"Result : {result}")
-        print(f"Feedback : {feedback}")
-
-interface_addr = dict()
-interface_name = dict()
-
-def generate_IP_addr(interface, version, prefix):
-    while True:
-        addr = ""
-        if version == "v4":
-            if prefix != "" and prefix[-1] != ".": prefix += "."
-            n_rand = 4 - (len(prefix.split(".")) - 1)
-            addr = prefix + ".".join(("%s" % random.randint(0, 255) for _ in range(n_rand)))
-            addr = addr.rstrip(".")
-        elif version == "v6":
-            if prefix != "" and prefix[-1] != ":": prefix += ":"
-            n_rand = 8 - (len(prefix.split(":")) - 1)
-            addr = prefix + ":".join(("%s" % format(random.randint(0, 0xffff), "x") for _ in range(n_rand)))
-            addr = addr.rstrip(":")
-        else: raise ValueError("IP version must be \"v4\" or \"v6\"")
-        if addr not in interface_addr.values():
-            interface_addr[interface] = addr
-            return addr
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import IPMininet_Exercice
+ex = IPMininet_Exercice(6)
 
 class MyTopology(IPTopo):
 
@@ -50,89 +20,40 @@ class MyTopology(IPTopo):
         r4 = self.addRouter("r4")
         r5 = self.addRouter("r5")
 
-        prefix = ":".join(("%s" % format(random.randint(0, 0xffff), "x") for _ in range(3)))
-        
-        interface_name["r1-r2"] = f"r1-eth{random.randint(0, 50)}"
-        interface_name["r2-r1"] = f"r2-eth{random.randint(0, 10)}"
-        interface_name["r2-r3"] = f"r2-eth{random.randint(11, 20)}"
-        interface_name["r3-r2"] = f"r3-eth{random.randint(0, 50)}"
-        interface_name["r2-r4"] = f"r2-eth{random.randint(21, 30)}"
-        interface_name["r4-r2"] = f"r4-eth{random.randint(0, 50)}"
-        interface_name["r2-r5"] = f"r2-eth{random.randint(31, 40)}"
-        interface_name["r5-r2"] = f"r5-eth{random.randint(0, 50)}"
+        self.addLink(r1, r2, intfName1=ex.generate_intf_name("r1-r2"), intfName2=ex.generate_intf_name("r2-r1"))
+        self.addLink(r2, r3, intfName1=ex.generate_intf_name("r2-r3"), intfName2=ex.generate_intf_name("r3-r2"))
+        self.addLink(r2, r4, intfName1=ex.generate_intf_name("r2-r4"), intfName2=ex.generate_intf_name("r4-r2"))
+        self.addLink(r2, r5, intfName1=ex.generate_intf_name("r2-r5"), intfName2=ex.generate_intf_name("r5-r2"))
 
-        lr1r2 = self.addLink(r1, r2, intfName1=interface_name["r1-r2"], intfName2=interface_name["r2-r1"])
-        lr1r2[r1].addParams(ip = generate_IP_addr("r1-r2", "v6", f"{prefix}:1:") + "/64")
-        lr1r2[r2].addParams(ip = generate_IP_addr("r2-r1", "v6", f"{prefix}:1:") + "/64")
-
-        lr2r3 = self.addLink(r2, r3, intfName1=interface_name["r2-r3"], intfName2=interface_name["r3-r2"])
-        lr2r3[r2].addParams(ip = generate_IP_addr("r2-r3", "v6", f"{prefix}:2:") + "/64")
-        lr2r3[r3].addParams(ip = generate_IP_addr("r3-r2", "v6", f"{prefix}:2:") + "/64")
-
-        lr2r4 = self.addLink(r2, r4, intfName1=interface_name["r2-r4"], intfName2=interface_name["r4-r2"])
-        lr2r4[r2].addParams(ip = generate_IP_addr("r2-r4", "v6", f"{prefix}:3:") + "/64")
-        lr2r4[r4].addParams(ip = generate_IP_addr("r4-r2", "v6", f"{prefix}:3:") + "/64")
-
-        lr2r5 = self.addLink(r2, r5, intfName1=interface_name["r2-r5"], intfName2=interface_name["r5-r2"])
-        lr2r5[r2].addParams(ip = generate_IP_addr("r2-r5", "v6", f"{prefix}:4:") + "/64")
-        lr2r5[r5].addParams(ip = generate_IP_addr("r5-r2", "v6", f"{prefix}:4:") + "/64")
-
-        generate_IP_addr("r1-lo", "v6", "")
-        generate_IP_addr("r2-lo", "v6", "")
-        generate_IP_addr("r3-lo", "v6", "")
-        generate_IP_addr("r4-lo", "v6", "")
-        generate_IP_addr("r5-lo", "v6", "")
+        routers = ["r1","r2","r3","r4","r5"]
+        for r in routers:
+            mask = 128
+            ex.generate_intf_addr(f"{r}-lo", ex.generate_subnet_addr(mask), mask)
 
         super(MyTopology, self).build(*args, **kwargs)
-
-class Test:
-
-    def __init__(self):
-        self.n_test = 0
-        self.n_success_test = 0
-        self.feedback = ""
-
-    def config_test(self, node, command, expected, success_msg, failed_msg):
-        self.n_test += 1
-        output = ""
-        try:
-            output = net[node].cmd(command)
-        except Exception as e:
-            self.feedback += f"{node} {command} error : {e}\n"
-            return
-        if expected in output:
-            self.n_success_test += 1
-            self.feedback += f"Success : {success_msg}\n"
-        else:
-            self.feedback += f"Failed : {failed_msg}\n"
-
-    def send_feedback(self):
-        grade = 100 if self.n_test == 0 else ((self.n_success_test / self.n_test) * 100)
-        result = "success" if grade == 100 else "failed"
-        store_feedback(grade, result, self.feedback)
 
 net = IPNet(topo=MyTopology(), allocate_IPs=False)
 
 try:
     net.start()
-    net["r1"].cmd(f"vtysh -c 'configure terminal' -c 'interface lo' -c 'ipv6 address {interface_addr['r1-lo']}/128' -c 'exit' -c 'exit' -c 'write memory'")
-    net["r2"].cmd(f"vtysh -c 'configure terminal' -c 'interface lo' -c 'ipv6 address {interface_addr['r2-lo']}/128' -c 'exit' -c 'exit' -c 'write memory'")
-    net["r3"].cmd(f"vtysh -c 'configure terminal' -c 'interface lo' -c 'ipv6 address {interface_addr['r3-lo']}/128' -c 'exit' -c 'exit' -c 'write memory'")
-    net["r4"].cmd(f"vtysh -c 'configure terminal' -c 'interface lo' -c 'ipv6 address {interface_addr['r4-lo']}/128' -c 'exit' -c 'exit' -c 'write memory'")
-    net["r5"].cmd(f"vtysh -c 'configure terminal' -c 'interface lo' -c 'ipv6 address {interface_addr['r5-lo']}/128' -c 'exit' -c 'exit' -c 'write memory'")
+
+    routers = ["r1","r2","r3","r4","r5"]
+    for r in routers:
+        net[r].cmd(f"vtysh -c 'configure terminal' -c 'interface lo' -c 'ipv6 address {ex.intf_addr[f'{r}-lo']}/128' -c 'exit' -c 'exit' -c 'write memory'")
+        net[r].cmd("vtysh -c 'configure terminal' -c 'router ospf6' -c 'interface lo area 0.0.0.0' -c 'exit' -c 'exit' -c 'write memory'")
 
     IPCLI(net)
 
-    test = Test()
-    for interface, name in interface_name.items():
+    for interface, name in ex.intf_names.items():
         src = interface.split("-")[0]
-        lo = interface_addr[f'{src}-lo'] + "/128"
-        test.config_test(src, f"vtysh -c 'show ipv6 ospf6 interface {name}'", "ipv6 ospf6 network point-to-point", f"{name} interface is unnumbered (point-to-point)", f"{name} interface must support point-to-point to be unnumbered")
-        test.config_test(src, f"vtysh -c 'show ipv6 ospf6 interface {name}'", f"inet6: {lo}", f"{name} has the correct address", f"{name} must have the same address as the loopback interface")
-    test.send_feedback()
+        lo_addr = ex.intf_addr[f'{src}-lo'] + "/128"
+        ex.output_test(src, f"vtysh -c 'show ipv6 ospf6 interface {name}'", "ipv6 ospf6 network point-to-point", f"{name} interface supports point-to-point", f"{name} interface must support point-to-point to be unnumbered", net)
+        ex.output_test(src, f"vtysh -c 'show ipv6 ospf6 interface {name}'", f"inet6: {lo_addr}", f"{name} has the correct address", f"{name} must have the same address as the loopback interface", net)
+
+    ex.send_feedback()
 
 except Exception as e:
-    store_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+    ex.send_feedback(0, "crash", f"Error from the ipmininet script : {e}")
 
 finally:
     net.stop()
