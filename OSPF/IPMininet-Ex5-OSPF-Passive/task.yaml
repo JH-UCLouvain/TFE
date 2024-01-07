@@ -1,0 +1,22 @@
+author: Jeremy Holodiline
+contact_url: ''
+context: |-
+    This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure a OSPF passive interface. We will consider the following network topology :
+
+    .. image:: IPMininet-Ex5-OSPF-Passive/topology.png
+
+    A passive interface is an interface where hello messages are no longer sent to discover the neighborhood. In general, this parameter is used to prevent an interface to send OSPF information on a part of the network for security reasons or to reduce some useless traffic. Configure the interface r2 -> r1 as passive. We invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6).
+environment_id: ipmininet
+environment_parameters:
+    limits:
+        time: '600'
+        hard_time: ''
+        memory: '512'
+    network_grading: 'on'
+    run_cmd: ''
+environment_type: docker-ssh
+file: ''
+input_random: 0
+name: IPMininet Ex5 - OSPF Passive interface
+network_grading: false
+problems: {}
