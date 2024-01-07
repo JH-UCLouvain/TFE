@@ -38,6 +38,8 @@ try:
         print(f"{r} must be configured with the loopback address : {ex.intf_addr[f'{r}-lo']}/128")
 
     net.start()
+    for r in routers:
+        net[r].cmd("vtysh -c 'configure terminal' -c 'router ospf6' -c 'no interface lo area 0.0.0.0' -c 'exit' -c 'exit' -c 'write memory'")
 
     IPCLI(net)
 
