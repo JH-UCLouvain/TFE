@@ -47,8 +47,8 @@ try:
     for interface, name in ex.intf_names.items():
         src = interface.split("-")[0]
         lo_addr = ex.intf_addr[f'{src}-lo'] + "/128"
-        ex.output_test(src, f"vtysh -c 'show ipv6 ospf6 interface {name}'", "ipv6 ospf6 network point-to-point", f"{name} interface supports point-to-point", f"{name} interface must support point-to-point to be unnumbered", net)
-        ex.output_test(src, f"vtysh -c 'show ipv6 ospf6 interface {name}'", f"inet6: {lo_addr}", f"{name} has the correct address", f"{name} must have the same address as the loopback interface", net)
+        ex.output_test(src, f"vtysh -c 'show running-config' | awk '/interface {name}/,/^!/'", f"ipv6 address {lo_addr}", f"{name} has the correct address", f"{name} must have the same address as the loopback interface", net)
+        ex.output_test(src, f"vtysh -c 'show running-config' | awk '/interface {name}/,/^!/'", "ipv6 ospf6 network point-to-point", f"{name} supports point-to-point", f"{name} must support point-to-point to be unnumbered", net)
 
     ex.send_feedback()
 
