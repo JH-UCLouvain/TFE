@@ -5,7 +5,7 @@ import random
 
 class IPMininet_Exercice:
 
-    def __init__(self, ip_version, store_fdbk=True):
+    def __init__(self, ip_version=6, store_fdbk=True):
         self.ip_version = ip_version
         self.store_fdbk = store_fdbk
         self.n_tests = 0
