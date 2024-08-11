@@ -52,13 +52,14 @@ lab.connect_machine_to_link(asBr1.name, "G", 2)
 
 ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
 
-asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
-asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
-asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
+lo_mask = 32
+asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 
-asBr1_lo_addr = ex.generate_intf_addr(f"{asBr1.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
-asBr2_lo_addr = ex.generate_intf_addr(f"{asBr2.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
-asBr3_lo_addr = ex.generate_intf_addr(f"{asBr3.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
+asBr1_lo_addr = ex.generate_intf_addr(f"{asBr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asBr2_lo_addr = ex.generate_intf_addr(f"{asBr2.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asBr3_lo_addr = ex.generate_intf_addr(f"{asBr3.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 
 mask = 24
 asAr1_asBr1_subnet = ex.generate_subnet_addr(ranges, mask)
@@ -181,6 +182,14 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
+    ex.exec_cmd("as62r1", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'network 172.25.16.37/24' -c 'network 192.168.112.6/32' -c 'neighbor 172.25.16.61 remote-as 6' -c 'neighbor 172.31.5.45 remote-as 62' -c 'neighbor 172.31.5.45 update-source lo' -c 'neighbor 172.31.5.45 next-hop-self' -c 'neighbor 172.17.186.17 remote-as 62' -c 'neighbor 172.17.186.17 update-source lo' -c 'neighbor 172.17.186.17 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as62r2", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 192.168.112.6 remote-as 62' -c 'neighbor 192.168.112.6 update-source lo' -c 'neighbor 192.168.112.6 next-hop-self' -c 'neighbor 172.17.186.17 remote-as 62' -c 'neighbor 172.17.186.17 update-source lo' -c 'neighbor 172.17.186.17 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as62r3", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 192.168.112.6 remote-as 62' -c 'neighbor 192.168.112.6 update-source lo' -c 'neighbor 192.168.112.6 next-hop-self' -c 'neighbor 172.31.5.45 remote-as 62' -c 'neighbor 172.31.5.45 update-source lo' -c 'neighbor 172.31.5.45 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as6r1", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'network 172.25.16.61/24' -c 'network 192.168.19.116/32' -c 'neighbor 172.25.16.37 remote-as 62' -c 'neighbor 192.168.83.104 remote-as 6' -c 'neighbor 192.168.83.104 update-source lo' -c 'neighbor 192.168.83.104 next-hop-self' -c 'neighbor 10.26.142.82 remote-as 6' -c 'neighbor 10.26.142.82 update-source lo' -c 'neighbor 10.26.142.82 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as6r2", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'neighbor 192.168.19.116 remote-as 6' -c 'neighbor 192.168.19.116 update-source lo' -c 'neighbor 192.168.19.116 next-hop-self' -c 'neighbor 10.26.142.82 remote-as 6' -c 'neighbor 10.26.142.82 update-source lo' -c 'neighbor 10.26.142.82 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as6r3", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'neighbor 192.168.19.116 remote-as 6' -c 'neighbor 192.168.19.116 update-source lo' -c 'neighbor 192.168.19.116 next-hop-self' -c 'neighbor 192.168.83.104 remote-as 6' -c 'neighbor 192.168.83.104 update-source lo' -c 'neighbor 192.168.83.104 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.run_client()
+
     # EXERCICE EVALUATION
     for a in lab.machines.keys():
         for b in lab.machines.keys():
@@ -197,7 +206,7 @@ try:
                         f"{a} has {b} as neighbor in his BGP database",
                         f"{a} has not {b} as neighbor in his BGP database, make sure you have announced {b} as a neighbor with the correct subnet address and AS number")
 
-                    ex.show_ip_bgp_test(a, ["*>", f"{b_lo}/{ex.subnet_addr[b_lo]}", f"{b_a_addr}", "0", "0", f"{ex.get_router_asn(b)}", "i"],
+                    ex.show_ip_bgp_test(a, ["*>", f"{b_lo}/{ex.subnet_addr[b_lo]}", f"{b_a_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_router_asn(b)}", "i"],
                         f"{a} knows {b} loopback address in his BGP routing table",
                         f"{a} does not know {b} loopback address in his BGP routing table, make sure you have announced {b} loopback address to the network")
                 

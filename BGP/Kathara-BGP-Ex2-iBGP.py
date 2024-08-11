@@ -36,9 +36,10 @@ lab.connect_machine_to_link(asAr3.name, "C", 1)
 
 ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
 
-asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
-asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
-asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(ranges, 32), 32)
+lo_mask = 32
+asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 
 # ROUTER ASAR1 SETUP
 lab.create_file_from_list([
@@ -101,6 +102,11 @@ try:
     # STARTING THE LAB + RUN CLIENT
     print("Starting lab ...")
     Kathara.get_instance().deploy_lab(lab=lab)
+    ex.run_client()
+
+    ex.exec_cmd("as62r1", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 172.24.41.108 remote-as 62' -c 'neighbor 172.24.41.108 update-source lo' -c 'neighbor 172.24.41.108 next-hop-self' -c 'neighbor 10.221.8.137 remote-as 62' -c 'neighbor 10.221.8.137 update-source lo' -c 'neighbor 10.221.8.137 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as62r2", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 172.19.128.55 remote-as 62' -c 'neighbor 172.19.128.55 update-source lo' -c 'neighbor 172.19.128.55 next-hop-self' -c 'neighbor 10.221.8.137 remote-as 62' -c 'neighbor 10.221.8.137 update-source lo' -c 'neighbor 10.221.8.137 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd("as62r3", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 172.19.128.55 remote-as 62' -c 'neighbor 172.19.128.55 update-source lo' -c 'neighbor 172.19.128.55 next-hop-self' -c 'neighbor 172.24.41.108 remote-as 62' -c 'neighbor 172.24.41.108 update-source lo' -c 'neighbor 172.24.41.108 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
     ex.run_client()
 
     # EXERCICE EVALUATION

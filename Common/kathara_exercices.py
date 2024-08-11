@@ -16,6 +16,7 @@ class Kathara_Exercice:
         self.subnet_addr = dict()
         self.intf_addr = dict()
         self.asn = dict()
+        self.to_ignore = "X"
 
     def send_feedback(self, grade=None, result=None, feedback=None):
         if grade is None: grade = 100 if self.n_tests == 0 else ((self.n_success_tests / self.n_tests) * 100)
@@ -133,25 +134,33 @@ class Kathara_Exercice:
         lines = self.exec_cmd(node, "vtysh -c 'show ip bgp'").strip().split("\n")
         bgp_entries = []
         in_bgp_table = False
-        status = ["*", "*>"]
         for l in lines:
             stripped = l.strip()
-            for s in status:
-                if stripped.startswith(s):
-                    bgp_entries.append(stripped)
-                    in_bgp_table = True
-                    break
-                elif in_bgp_table and stripped != "":
-                    bgp_entries[-1] += " " + stripped
-                    break
-                else:
-                    in_bgp_table = False
+            if stripped.startswith("*"):
+                bgp_entries.append(stripped)
+                in_bgp_table = True
+            elif in_bgp_table and stripped != "":
+                bgp_entries[-1] += " " + stripped
+            else:
+                in_bgp_table = False
+        network = ""
+        for i in range(len(bgp_entries)):
+            ent = [e for e in bgp_entries[i].split() if e.strip()]
+            bgp_entries[i] = ent
+            if "/" in bgp_entries[i][1]:
+                network = bgp_entries[i][1]
+            else:
+                bgp_entries[i].insert(1, network)
         for entry in bgp_entries:
-            ent = [e for e in entry.split() if e.strip()]
-            if expected == ent:
-                self.n_success_tests += 1
-                self.feedback += f"Success : {success_msg}\n"
-                return
+            if len(expected) == len(entry):
+                line_found = True
+                for i in range(len(expected)):
+                    if expected[i] != self.to_ignore and expected[i] != entry[i]:
+                        line_found = False
+                if line_found:
+                    self.n_success_tests += 1
+                    self.feedback += f"Success : {success_msg}\n"
+                    return
         self.feedback += f"Failed : {failed_msg}\n"
 
     def set_daemons(self, daemons):
