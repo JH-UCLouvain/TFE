@@ -19,3 +19,6 @@ ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map ACCEPT_ALL
 ex.exec_cmd(asAr2.name, f"vtysh -c 'configure terminal' -c 'route-map ACCEPT_ALL permit 10' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr1_asAr2_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr1_asAr2_addr} route-map ACCEPT_ALL out' -c 'neighbor {asBr1_asAr2_addr} route-map ACCEPT_ALL in' -c 'neighbor {asBr1_asAr2_addr} route-map ACCEPT_ALL out' -c 'exit' -c 'exit' -c 'write memory'")
 ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'route-map ACCEPT_ALL permit 10' -c 'exit' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asAr1_asBr1_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr1_asBr1_addr} route-map ACCEPT_ALL out' -c 'neighbor {asAr2_asBr1_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr2_asBr1_addr} route-map ACCEPT_ALL out' -c 'exit' -c 'exit' -c 'write memory'")
 ex.run_client()
+
+ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map LOCPRF permit 20' -c 'set local-preference 5' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asDr1_asAr1_addr} route-map LOCPRF in' -c 'exit' -c 'exit' -c 'write memory'")
+ex.run_client()
