@@ -4,7 +4,7 @@
 # LAB SETUP
 from Kathara.manager.Kathara import Kathara
 from Kathara.model.Lab import Lab
-lab = Lab("Kathara BGP - Ex5 Local Pref")
+lab = Lab("Kathara BGP - Ex7 Community")
 
 import sys
 sys.path.append('..')
@@ -32,11 +32,8 @@ lab.connect_machine_to_link(asBr1.name, "A", 0)
 lab.connect_machine_to_link(asBr1.name, "B", 1)
 lab.connect_machine_to_link(asCr1.name, "B", 0)
 
-lab.connect_machine_to_link(asCr1.name, "C", 1)
-lab.connect_machine_to_link(asDr1.name, "C", 0)
-
-lab.connect_machine_to_link(asAr1.name, "D", 1)
-lab.connect_machine_to_link(asDr1.name, "D", 1)
+lab.connect_machine_to_link(asBr1.name, "D", 2)
+lab.connect_machine_to_link(asDr1.name, "D", 0)
 
 ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
 
@@ -50,35 +47,26 @@ asBr1_asCr1_subnet = ex.generate_subnet_addr(ranges, mask)
 asBr1_asCr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asCr1.name}", asBr1_asCr1_subnet, mask)
 asCr1_asBr1_addr = ex.generate_intf_addr(f"{asCr1.name}-{asBr1.name}", asBr1_asCr1_subnet, mask)
 
-asCr1_asDr1_subnet = ex.generate_subnet_addr(ranges, mask)
-asCr1_asDr1_addr = ex.generate_intf_addr(f"{asCr1.name}-{asDr1.name}", asCr1_asDr1_subnet, mask)
-asDr1_asCr1_addr = ex.generate_intf_addr(f"{asDr1.name}-{asCr1.name}", asCr1_asDr1_subnet, mask)
-
-asAr1_asDr1_subnet = ex.generate_subnet_addr(ranges, mask)
-asAr1_asDr1_addr = ex.generate_intf_addr(f"{asAr1.name}-{asDr1.name}", asAr1_asDr1_subnet, mask)
-asDr1_asAr1_addr = ex.generate_intf_addr(f"{asDr1.name}-{asAr1.name}", asAr1_asDr1_subnet, mask)
+asBr1_asDr1_subnet = ex.generate_subnet_addr(ranges, mask)
+asBr1_asDr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asDr1.name}", asBr1_asDr1_subnet, mask)
+asDr1_asBr1_addr = ex.generate_intf_addr(f"{asDr1.name}-{asBr1.name}", asBr1_asDr1_subnet, mask)
 
 # ROUTER ASAR1 SETUP
 lab.create_file_from_list([
     f"ip addr add {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} dev eth0",
-    f"ip addr add {asAr1_asDr1_addr}/{ex.subnet_addr[asAr1_asDr1_subnet]} dev eth1",
     "systemctl start frr"
 ], f"{asAr1.name}.startup")
 
 asAr1.create_file_from_list([
     "password zebra",
     "enable password zebra",
-    "route-map ACCEPT_ALL permit 10",
+    "route-map ACCEPT_ALL permit 20",
     "exit",
     f"router bgp {ex.get_asn('A')}",
     f"network {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}",
-    f"network {asAr1_asDr1_addr}/{ex.subnet_addr[asAr1_asDr1_subnet]}",
     f"neighbor {asBr1_asAr1_addr} remote-as {ex.get_asn('B')}",
     f"neighbor {asBr1_asAr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asBr1_asAr1_addr} route-map ACCEPT_ALL out",
-    f"neighbor {asDr1_asAr1_addr} remote-as {ex.get_asn('D')}",
-    f"neighbor {asDr1_asAr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asDr1_asAr1_addr} route-map ACCEPT_ALL out"
+    f"neighbor {asBr1_asAr1_addr} route-map ACCEPT_ALL out"
 ], "/etc/frr/frr.conf")
 
 asAr1.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
@@ -88,23 +76,28 @@ asAr1.create_file_from_list(["service integrated-vtysh-config", f"hostname {asAr
 lab.create_file_from_list([
     f"ip addr add {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} dev eth0",
     f"ip addr add {asBr1_asCr1_addr}/{ex.subnet_addr[asBr1_asCr1_subnet]} dev eth1",
+    f"ip addr add {asBr1_asDr1_addr}/{ex.subnet_addr[asBr1_asDr1_subnet]} dev eth2",
     "systemctl start frr"
 ], f"{asBr1.name}.startup")
 
 asBr1.create_file_from_list([
     "password zebra",
     "enable password zebra",
-    "route-map ACCEPT_ALL permit 10",
+    "route-map ACCEPT_ALL permit 20",
     "exit",
     f"router bgp {ex.get_asn('B')}",
     f"network {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}",
     f"network {asBr1_asCr1_addr}/{ex.subnet_addr[asBr1_asCr1_subnet]}",
+    f"network {asBr1_asDr1_addr}/{ex.subnet_addr[asBr1_asDr1_subnet]}",
     f"neighbor {asAr1_asBr1_addr} remote-as {ex.get_asn('A')}",
     f"neighbor {asAr1_asBr1_addr} route-map ACCEPT_ALL in",
     f"neighbor {asAr1_asBr1_addr} route-map ACCEPT_ALL out",
     f"neighbor {asCr1_asBr1_addr} remote-as {ex.get_asn('C')}",
     f"neighbor {asCr1_asBr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asCr1_asBr1_addr} route-map ACCEPT_ALL out"
+    f"neighbor {asCr1_asBr1_addr} route-map ACCEPT_ALL out",
+    f"neighbor {asDr1_asBr1_addr} remote-as {ex.get_asn('D')}",
+    f"neighbor {asDr1_asBr1_addr} route-map ACCEPT_ALL in",
+    f"neighbor {asDr1_asBr1_addr} route-map ACCEPT_ALL out"
 ], "/etc/frr/frr.conf")
 
 asBr1.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
@@ -113,24 +106,19 @@ asBr1.create_file_from_list(["service integrated-vtysh-config", f"hostname {asBr
 # ROUTER ASCR1 SETUP
 lab.create_file_from_list([
     f"ip addr add {asCr1_asBr1_addr}/{ex.subnet_addr[asBr1_asCr1_subnet]} dev eth0",
-    f"ip addr add {asCr1_asDr1_addr}/{ex.subnet_addr[asCr1_asDr1_subnet]} dev eth1",
     "systemctl start frr"
 ], f"{asCr1.name}.startup")
 
 asCr1.create_file_from_list([
     "password zebra",
     "enable password zebra",
-    "route-map ACCEPT_ALL permit 10",
+    "route-map ACCEPT_ALL permit 20",
     "exit",
     f"router bgp {ex.get_asn('C')}",
     f"network {asCr1_asBr1_addr}/{ex.subnet_addr[asBr1_asCr1_subnet]}",
-    f"network {asCr1_asDr1_addr}/{ex.subnet_addr[asCr1_asDr1_subnet]}",
     f"neighbor {asBr1_asCr1_addr} remote-as {ex.get_asn('B')}",
     f"neighbor {asBr1_asCr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asBr1_asCr1_addr} route-map ACCEPT_ALL out",
-    f"neighbor {asDr1_asCr1_addr} remote-as {ex.get_asn('D')}",
-    f"neighbor {asDr1_asCr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asDr1_asCr1_addr} route-map ACCEPT_ALL out"
+    f"neighbor {asBr1_asCr1_addr} route-map ACCEPT_ALL out"
 ], "/etc/frr/frr.conf")
 
 asCr1.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
@@ -138,25 +126,20 @@ asCr1.create_file_from_list(["service integrated-vtysh-config", f"hostname {asCr
 
 # ROUTER ASDR1 SETUP
 lab.create_file_from_list([
-    f"ip addr add {asDr1_asCr1_addr}/{ex.subnet_addr[asCr1_asDr1_subnet]} dev eth0",
-    f"ip addr add {asDr1_asAr1_addr}/{ex.subnet_addr[asAr1_asDr1_subnet]} dev eth1",
+    f"ip addr add {asDr1_asBr1_addr}/{ex.subnet_addr[asBr1_asDr1_subnet]} dev eth0",
     "systemctl start frr"
 ], f"{asDr1.name}.startup")
 
 asDr1.create_file_from_list([
     "password zebra",
     "enable password zebra",
-    "route-map ACCEPT_ALL permit 10",
+    "route-map ACCEPT_ALL permit 20",
     "exit",
     f"router bgp {ex.get_asn('D')}",
-    f"network {asDr1_asAr1_addr}/{ex.subnet_addr[asAr1_asDr1_subnet]}",
-    f"network {asDr1_asCr1_addr}/{ex.subnet_addr[asCr1_asDr1_subnet]}",
-    f"neighbor {asAr1_asDr1_addr} remote-as {ex.get_asn('A')}",
-    f"neighbor {asAr1_asDr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asAr1_asDr1_addr} route-map ACCEPT_ALL out",
-    f"neighbor {asCr1_asDr1_addr} remote-as {ex.get_asn('C')}",
-    f"neighbor {asCr1_asDr1_addr} route-map ACCEPT_ALL in",
-    f"neighbor {asCr1_asDr1_addr} route-map ACCEPT_ALL out"
+    f"network {asDr1_asBr1_addr}/{ex.subnet_addr[asBr1_asDr1_subnet]}",
+    f"neighbor {asBr1_asDr1_addr} remote-as {ex.get_asn('B')}",
+    f"neighbor {asBr1_asDr1_addr} route-map ACCEPT_ALL in",
+    f"neighbor {asBr1_asDr1_addr} route-map ACCEPT_ALL out"
 ], "/etc/frr/frr.conf")
 
 asDr1.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
@@ -168,13 +151,18 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map LOCPRF permit 20' -c 'set local-preference 5' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asDr1_asAr1_addr} route-map LOCPRF in' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
+    # EXERCICE EVALUATION    
+    ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asAr1_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
+        f"{asBr1.name} knows a route to AS{ex.get_asn('A')}",
+        f"{asBr1.name} does not know any route to AS{ex.get_asn('A')}")
+    
+    ex.show_ip_bgp_test(asCr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asCr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
+        f"{asCr1.name} knows a route to AS{ex.get_asn('A')}",
+        f"{asCr1.name} does not know any route to AS{ex.get_asn('A')}")
 
-    # EXERCICE EVALUATION
-    ex.show_ip_bgp_test(asAr1.name, ["*>", f"{asCr1_asDr1_subnet}/{ex.subnet_addr[asCr1_asDr1_subnet]}", f"{asBr1_asAr1_addr}", ex.to_ignore, f"{ex.get_asn('B')}", f"{ex.get_asn('C')}", "i"], True,
-        f"{asAr1.name} knows AS{ex.get_asn('B')}->AS{ex.get_asn('C')} as the best route to {asCr1.name}-{asDr1.name} subnet",
-        f"{asAr1.name} does not know AS{ex.get_asn('B')}->AS{ex.get_asn('C')} as the best route to {asCr1.name}-{asDr1.name} subnet, make sure you have created and applied the route map that modifies the local preference attribute to the correct route")
+    ex.show_ip_bgp_test(asDr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asDr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], False,
+        f"{asDr1.name} does not know any route to AS{ex.get_asn('A')}",
+        f"{asDr1.name} knows a route to AS{ex.get_asn('A')}")
 
     # SHOW FEEDBACK
     ex.send_feedback()

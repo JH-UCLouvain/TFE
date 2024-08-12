@@ -22,3 +22,8 @@ ex.run_client()
 
 ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map LOCPRF permit 20' -c 'set local-preference 5' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asDr1_asAr1_addr} route-map LOCPRF in' -c 'exit' -c 'exit' -c 'write memory'")
 ex.run_client()
+
+deny_asC = f"DENY_AS{ex.get_asn('C')}_PREFIX"
+ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'ip prefix-list {deny_asC} seq 1 deny {asAr1_asCr1_subnet}/{ex.subnet_addr[asAr1_asCr1_subnet]}' -c 'route-map {deny_asC} deny 10' -c 'match ip address prefix-list {deny_asC}' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asCr1_asAr1_addr} route-map {deny_asC} in' -c 'neighbor {asCr1_asAr1_addr} route-map {deny_asC} out' -c 'exit' -c 'exit' -c 'write memory'")
+ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'ip prefix-list {deny_asC} seq 1 deny {asBr1_asCr1_subnet}/{ex.subnet_addr[asBr1_asCr1_subnet]}' -c 'route-map {deny_asC} deny 10' -c 'match ip address prefix-list {deny_asC}' -c 'exit' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asCr1_asBr1_addr} route-map {deny_asC} in' -c 'neighbor {asCr1_asBr1_addr} route-map {deny_asC} out' -c 'exit' -c 'exit' -c 'write memory'")
+ex.run_client()

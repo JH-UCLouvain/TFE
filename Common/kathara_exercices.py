@@ -129,7 +129,7 @@ class Kathara_Exercice:
         else:
             self.feedback += f"Failed : {failed_msg}\n"
 
-    def show_ip_bgp_test(self, node, expected, success_msg, failed_msg):
+    def show_ip_bgp_test(self, node, expected, has_to_be, success_msg, failed_msg):
         self.n_tests += 1
         lines = self.exec_cmd(node, "vtysh -c 'show ip bgp'").strip().split("\n")
         bgp_entries = []
@@ -158,10 +158,18 @@ class Kathara_Exercice:
                     if expected[i] != self.to_ignore and expected[i] != entry[i]:
                         line_found = False
                 if line_found:
-                    self.n_success_tests += 1
-                    self.feedback += f"Success : {success_msg}\n"
-                    return
-        self.feedback += f"Failed : {failed_msg}\n"
+                    if has_to_be:
+                        self.n_success_tests += 1
+                        self.feedback += f"Success : {success_msg}\n"
+                        return
+                    else:
+                        self.feedback += f"Failed : {failed_msg}\n"
+                        return
+        if has_to_be:
+            self.feedback += f"Failed : {failed_msg}\n"
+        else:
+            self.n_success_tests += 1
+            self.feedback += f"Success : {success_msg}\n"
 
     def set_daemons(self, daemons):
         settings = [

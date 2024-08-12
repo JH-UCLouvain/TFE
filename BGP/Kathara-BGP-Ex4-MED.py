@@ -123,11 +123,11 @@ try:
     ex.run_client()
 
     # EXERCICE EVALUATION
-    ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asAr2_subnet}/{ex.subnet_addr[asAr1_asAr2_subnet]}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"],
+    ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asAr2_subnet}/{ex.subnet_addr[asAr1_asAr2_subnet]}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
         f"{asBr1.name} knows {asAr1.name}-{asAr2.name} subnet in his BGP table",
         f"{asBr1.name} does not know {asAr1.name}-{asAr2.name} subnet in his BGP table, make sure you have created and applied the route map that accepts all routes for all routers")
 
-    ex.show_ip_bgp_test(asBr1.name, ["*>", f"{asAr1_asAr2_subnet}/{ex.subnet_addr[asAr1_asAr2_subnet]}", f"{asAr2_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"],
+    ex.show_ip_bgp_test(asBr1.name, ["*>", f"{asAr1_asAr2_subnet}/{ex.subnet_addr[asAr1_asAr2_subnet]}", f"{asAr2_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
         f"{asBr1.name} knows {asAr1.name}-{asAr2.name} subnet in his BGP table with {asAr2.name} as the best route",
         f"{asBr1.name} does not know {asAr1.name}-{asAr2.name} subnet in his BGP table or {asAr2.name} is not the best route, make sure you have created and applied the route map that modifies the MED attribute to the correct route")
 
