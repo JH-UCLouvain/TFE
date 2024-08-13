@@ -94,7 +94,7 @@ try:
                     f"{a} has {b} as neighbor in his BGP database",
                     f"{a} has not {b} as neighbor in his BGP database, make sure you have announced {b} as a neighbor with the correct subnet address and AS number")
 
-                ex.show_ip_bgp_test(a, ["*>", f"{b_lo}/{ex.subnet_addr[b_lo]}", f"{b_a_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_router_asn(b)}", "i"], True,
+                ex.show_ip_bgp_test(a, [ex.to_ignore, f"{b_lo}/{ex.subnet_addr[b_lo]}", f"{b_a_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_router_asn(b)}", "i"], True,
                     f"{a} knows {b} loopback address in his BGP routing table",
                     f"{a} does not know {b} loopback address in his BGP routing table, make sure you have announced {b} loopback address to the network")
 

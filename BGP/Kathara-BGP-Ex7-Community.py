@@ -151,18 +151,37 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    # EXERCICE EVALUATION    
+    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map SET_COMMUNITY permit 10' -c 'set community {ex.get_asn('A')}:100' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'no network {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'network {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} route-map SET_COMMUNITY' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'ip prefix-list TO_ADVERTISE seq 10 permit {asBr1_asCr1_subnet}/{ex.subnet_addr[asBr1_asCr1_subnet]}' -c 'route-map FILTER_COMMUNITY deny 5' -c 'match community {ex.get_asn('A')}:100' -c 'exit' -c 'route-map FILTER_COMMUNITY permit 10' -c 'match ip address prefix-list TO_ADVERTISE' -c 'exit' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asDr1_asBr1_addr} route-map FILTER_COMMUNITY out' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.run_client()
+
+    # EXERCICE EVALUATION
+
     ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asAr1_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
         f"{asBr1.name} knows a route to AS{ex.get_asn('A')}",
-        f"{asBr1.name} does not know any route to AS{ex.get_asn('A')}")
+        f"{asBr1.name} does not know any route to AS{ex.get_asn('A')}, it must be able to reach it")
     
     ex.show_ip_bgp_test(asCr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asCr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
         f"{asCr1.name} knows a route to AS{ex.get_asn('A')}",
-        f"{asCr1.name} does not know any route to AS{ex.get_asn('A')}")
-
+        f"{asCr1.name} does not know any route to AS{ex.get_asn('A')}, it must be able to reach it")
+    
+    ex.show_ip_bgp_test(asDr1.name, [ex.to_ignore, f"{asBr1_asCr1_subnet}/{ex.subnet_addr[asBr1_asCr1_subnet]}", f"{asBr1_asDr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
+        f"{asDr1.name} knows a route to AS{ex.get_asn('C')}",
+        f"{asDr1.name} does not know any route to AS{ex.get_asn('C')}, it must be able to reach it")
+    
     ex.show_ip_bgp_test(asDr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asDr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], False,
         f"{asDr1.name} does not know any route to AS{ex.get_asn('A')}",
-        f"{asDr1.name} knows a route to AS{ex.get_asn('A')}")
+        f"{asDr1.name} knows a route to AS{ex.get_asn('A')}, make sure you have correctly configured the community in {asAr1.name} and filtred the correct route with it in {asBr1.name}")
+    
+    ex.in_output_test(asAr1.name, f"vtysh -c 'show running-config'",
+        f"set community {ex.get_asn('A')}:",
+        f"set community in {asAr1.name}",
+        f"no set community in {asAr1.name}, make sure you have created the route map with the set community inside")
+    
+    ex.in_output_test(asBr1.name, f"vtysh -c 'show running-config'",
+        f"match community {ex.get_asn('A')}:",
+        f"match community in {asBr1.name}",
+        f"no match community in {asBr1.name}, make sure you have created the route map that matches the community created in {asAr1.name}")
 
     # SHOW FEEDBACK
     ex.send_feedback()

@@ -142,27 +142,27 @@ try:
     # EXERCICE EVALUATION
     ex.show_ip_bgp_test(asAr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asAr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
         f"{asAr1.name} knows a route to AS{ex.get_asn('B')}",
-        f"{asAr1.name} does not know any route to AS{ex.get_asn('B')}")
+        f"{asAr1.name} does not know any route to AS{ex.get_asn('B')}, it must be able to reach it")
 
     ex.show_ip_bgp_test(asAr1.name, [ex.to_ignore, f"{asAr1_asCr1_subnet}/{ex.subnet_addr[asAr1_asCr1_subnet]}", f"{asCr1_asAr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('C')}", "i"], False,
         f"{asAr1.name} does not know any route to AS{ex.get_asn('C')}",
-        f"{asAr1.name} knows a route to AS{ex.get_asn('C')}")
+        f"{asAr1.name} knows a route to AS{ex.get_asn('C')}, make sure you have correctly filtered the {asCr1.name} prefixes with route maps")
 
     ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asAr1_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
         f"{asBr1.name} knows a route to AS{ex.get_asn('A')}",
-        f"{asBr1.name} does not know any route to AS{ex.get_asn('A')}")
+        f"{asBr1.name} does not know any route to AS{ex.get_asn('A')}, it must be able to reach it")
 
     ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asBr1_asCr1_subnet}/{ex.subnet_addr[asBr1_asCr1_subnet]}", f"{asCr1_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('C')}", "i"], False,
         f"{asBr1.name} does not know any route to AS{ex.get_asn('C')}",
-        f"{asBr1.name} knows a route to AS{ex.get_asn('C')}")
+        f"{asBr1.name} knows a route to AS{ex.get_asn('C')}, make sure you have correctly filtered the {asCr1.name} subnets with route maps")
 
     ex.show_ip_bgp_test(asCr1.name, [ex.to_ignore, f"{asBr1_asCr1_subnet}/{ex.subnet_addr[asBr1_asCr1_subnet]}", f"{asBr1_asCr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], False,
         f"{asCr1.name} does not know any route to AS{ex.get_asn('B')}",
-        f"{asCr1.name} knows a route to AS{ex.get_asn('B')}")
+        f"{asCr1.name} knows a route to AS{ex.get_asn('B')}, make sure you have correctly filtered the {asCr1.name} subnets with route maps")
 
     ex.show_ip_bgp_test(asCr1.name, [ex.to_ignore, f"{asAr1_asCr1_subnet}/{ex.subnet_addr[asAr1_asCr1_subnet]}", f"{asAr1_asCr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], False,
         f"{asCr1.name} does not know any route to AS{ex.get_asn('A')}",
-        f"{asCr1.name} knows a route to AS{ex.get_asn('A')}")
+        f"{asCr1.name} knows a route to AS{ex.get_asn('A')}, make sure you have correctly filtered the {asCr1.name} subnets with route maps")
 
     # SHOW FEEDBACK
     ex.send_feedback()
