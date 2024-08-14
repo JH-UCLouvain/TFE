@@ -29,10 +29,6 @@ lab.connect_machine_to_link(asBr1.name, "A", 0)
 
 ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
 
-lo_mask = 32
-asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
-asBr1_lo_addr = ex.generate_intf_addr(f"{asBr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
-
 mask = 24
 asAr1_asBr1_subnet = ex.generate_subnet_addr(ranges, mask)
 asAr1_asBr1_addr = ex.generate_intf_addr(f"{asAr1.name}-{asBr1.name}", asAr1_asBr1_subnet, mask)
@@ -40,7 +36,6 @@ asBr1_asAr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asAr1.name}", asAr1_asB
 
 # ROUTER ASAR1 SETUP
 lab.create_file_from_list([
-    f"ip addr add {asAr1_lo_addr}/{ex.subnet_addr[asAr1_lo_addr]} dev lo",
     f"ip addr add {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} dev eth0",
     "systemctl start frr"
 ], f"{asAr1.name}.startup")
@@ -57,7 +52,6 @@ asAr1.create_file_from_list(["service integrated-vtysh-config", f"hostname {asAr
 
 # ROUTER ASBR1 SETUP
 lab.create_file_from_list([
-    f"ip addr add {asBr1_lo_addr}/{ex.subnet_addr[asBr1_lo_addr]} dev lo",
     f"ip addr add {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} dev eth0",
     "systemctl start frr"
 ], f"{asBr1.name}.startup")
@@ -78,25 +72,18 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
     
-    ex.exec_cmd("as62r1", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'network 172.17.186.17/24' -c 'network 192.168.112.6/32' -c 'neighbor 172.17.186.19 remote-as 6' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd("as6r1", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'network 172.17.186.19/24' -c 'network 172.31.5.45/32' -c 'neighbor 172.17.186.17 remote-as 62' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'network {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'neighbor {asBr1_asAr1_addr} remote-as {ex.get_asn('B')}' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('B')}' -c 'network {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'neighbor {asAr1_asBr1_addr} remote-as {ex.get_asn('A')}' -c 'exit' -c 'exit' -c 'write memory'")
     ex.run_client()
 
     # EXERCICE EVALUATION
-    for a in lab.machines.keys():
-        for b in lab.machines.keys():
-            if a != b:
-                b_a_addr = ex.intf_addr[f"{b}-{a}"]
-                b_lo = ex.intf_addr[f"{b}-lo"]
+    ex.show_ip_bgp_test(asAr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asAr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
+        f"{asAr1.name} knows a route to {asBr1.name}",
+        f"{asAr1.name} does not know a route {asBr1.name}, make sure you have announced the subnet address to the network and declared the neighbor")
 
-                ex.in_output_test(a, f"vtysh -c 'show ip bgp neighbors {b_a_addr}'",
-                    f"BGP neighbor is {b_a_addr}, remote AS {ex.get_router_asn(b)}, local AS {ex.get_router_asn(a)}, external link",
-                    f"{a} has {b} as neighbor in his BGP database",
-                    f"{a} has not {b} as neighbor in his BGP database, make sure you have announced {b} as a neighbor with the correct subnet address and AS number")
-
-                ex.show_ip_bgp_test(a, [ex.to_ignore, f"{b_lo}/{ex.subnet_addr[b_lo]}", f"{b_a_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_router_asn(b)}", "i"], True,
-                    f"{a} knows {b} loopback address in his BGP routing table",
-                    f"{a} does not know {b} loopback address in his BGP routing table, make sure you have announced {b} loopback address to the network")
+    ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asAr1_asBr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
+        f"{asBr1.name} knows a route to {asAr1.name}",
+        f"{asBr1.name} does not know a route {asAr1.name}, make sure you have announced the subnet address to the network and declared the neighbor")
 
     # SHOW FEEDBACK
     ex.send_feedback()

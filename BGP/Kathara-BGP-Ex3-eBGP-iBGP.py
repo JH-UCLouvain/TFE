@@ -56,7 +56,6 @@ lo_mask = 32
 asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
-
 asBr1_lo_addr = ex.generate_intf_addr(f"{asBr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 asBr2_lo_addr = ex.generate_intf_addr(f"{asBr2.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
 asBr3_lo_addr = ex.generate_intf_addr(f"{asBr3.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
@@ -69,8 +68,8 @@ asBr1_asAr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asAr1.name}", asAr1_asB
 # ROUTER ASAR1 SETUP
 lab.create_file_from_list([
     f"ip addr add {asAr1_lo_addr}/{ex.subnet_addr[asAr1_lo_addr]} dev lo",
-    f"ip unnumbered dev eth0",
-    f"ip unnumbered dev eth1",
+    f"ip addr add {asAr1_lo_addr}/{ex.subnet_addr[asAr1_lo_addr]} dev eth0",
+    f"ip addr add {asAr1_lo_addr}/{ex.subnet_addr[asAr1_lo_addr]} dev eth1",
     f"ip addr add {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} dev eth2",
     "systemctl start frr"
 ], f"{asAr1.name}.startup")
@@ -79,17 +78,26 @@ asAr1.create_file_from_list([
     "password zebra",
     "enable password zebra",
     f"router bgp {ex.get_asn('A')}",
-    "no bgp ebgp-requires-policy"
+    "no bgp ebgp-requires-policy",
+    "exit",
+    "interface eth0",
+    "ip ospf network point-to-point",
+    "exit",
+    "interface eth1",
+    "ip ospf network point-to-point",
+    "exit",
+    "router ospf",
+    f"network {asAr1_lo_addr}/{ex.subnet_addr[asAr1_lo_addr]} area 0.0.0.0"
 ], "/etc/frr/frr.conf")
 
-asAr1.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
+asAr1.create_file_from_list(ex.set_daemons(["zebra","bgpd","ospfd","ospf6d"]), "/etc/frr/daemons")
 asAr1.create_file_from_list(["service integrated-vtysh-config", f"hostname {asAr1.name}-frr"], "/etc/frr/vtysh.conf")
 
 # ROUTER ASAR2 SETUP
 lab.create_file_from_list([
     f"ip addr add {asAr2_lo_addr}/{ex.subnet_addr[asAr2_lo_addr]} dev lo",
-    f"ip unnumbered dev eth0",
-    f"ip unnumbered dev eth1",
+    f"ip addr add {asAr2_lo_addr}/{ex.subnet_addr[asAr2_lo_addr]} dev eth0",
+    f"ip addr add {asAr2_lo_addr}/{ex.subnet_addr[asAr2_lo_addr]} dev eth1",
     "systemctl start frr"
 ], f"{asAr2.name}.startup")
 
@@ -97,17 +105,26 @@ asAr2.create_file_from_list([
     "password zebra",
     "enable password zebra",
     f"router bgp {ex.get_asn('A')}",
-    "no bgp ebgp-requires-policy"
+    "no bgp ebgp-requires-policy",
+    "exit",
+    "interface eth0",
+    "ip ospf network point-to-point",
+    "exit",
+    "interface eth1",
+    "ip ospf network point-to-point",
+    "exit",
+    "router ospf",
+    f"network {asAr2_lo_addr}/{ex.subnet_addr[asAr2_lo_addr]} area 0.0.0.0"
 ], "/etc/frr/frr.conf")
 
-asAr2.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
+asAr2.create_file_from_list(ex.set_daemons(["zebra","bgpd","ospfd","ospf6d"]), "/etc/frr/daemons")
 asAr2.create_file_from_list(["service integrated-vtysh-config", f"hostname {asAr2.name}-frr"], "/etc/frr/vtysh.conf")
 
 # ROUTER ASAR3 SETUP
 lab.create_file_from_list([
     f"ip addr add {asAr3_lo_addr}/{ex.subnet_addr[asAr3_lo_addr]} dev lo",
-    f"ip unnumbered dev eth0",
-    f"ip unnumbered dev eth1",
+    f"ip addr add {asAr3_lo_addr}/{ex.subnet_addr[asAr3_lo_addr]} dev eth0",
+    f"ip addr add {asAr3_lo_addr}/{ex.subnet_addr[asAr3_lo_addr]} dev eth1",
     "systemctl start frr"
 ], f"{asAr3.name}.startup")
 
@@ -115,17 +132,26 @@ asAr3.create_file_from_list([
     "password zebra",
     "enable password zebra",
     f"router bgp {ex.get_asn('A')}",
-    "no bgp ebgp-requires-policy"
+    "no bgp ebgp-requires-policy",
+    "exit",
+    "interface eth0",
+    "ip ospf network point-to-point",
+    "exit",
+    "interface eth1",
+    "ip ospf network point-to-point",
+    "exit",
+    "router ospf",
+    f"network {asAr3_lo_addr}/{ex.subnet_addr[asAr3_lo_addr]} area 0.0.0.0"
 ], "/etc/frr/frr.conf")
 
-asAr3.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
+asAr3.create_file_from_list(ex.set_daemons(["zebra","bgpd","ospfd","ospf6d"]), "/etc/frr/daemons")
 asAr3.create_file_from_list(["service integrated-vtysh-config", f"hostname {asAr3.name}-frr"], "/etc/frr/vtysh.conf")
 
 # ROUTER ASBR1 SETUP
 lab.create_file_from_list([
     f"ip addr add {asBr1_lo_addr}/{ex.subnet_addr[asBr1_lo_addr]} dev lo",
-    f"ip unnumbered dev eth0",
-    f"ip unnumbered dev eth1",
+    f"ip addr add {asBr1_lo_addr}/{ex.subnet_addr[asBr1_lo_addr]} dev eth0",
+    f"ip addr add {asBr1_lo_addr}/{ex.subnet_addr[asBr1_lo_addr]} dev eth1",
     f"ip addr add {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]} dev eth2",
     "systemctl start frr"
 ], f"{asBr1.name}.startup")
@@ -134,17 +160,26 @@ asBr1.create_file_from_list([
     "password zebra",
     "enable password zebra",
     f"router bgp {ex.get_asn('B')}",
-    "no bgp ebgp-requires-policy"
+    "no bgp ebgp-requires-policy",
+    "exit",
+    "interface eth0",
+    "ip ospf network point-to-point",
+    "exit",
+    "interface eth1",
+    "ip ospf network point-to-point",
+    "exit",
+    "router ospf",
+    f"network {asBr1_lo_addr}/{ex.subnet_addr[asBr1_lo_addr]} area 0.0.0.0"
 ], "/etc/frr/frr.conf")
 
-asBr1.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
+asBr1.create_file_from_list(ex.set_daemons(["zebra","bgpd","ospfd","ospf6d"]), "/etc/frr/daemons")
 asBr1.create_file_from_list(["service integrated-vtysh-config", f"hostname {asBr1.name}-frr"], "/etc/frr/vtysh.conf")
 
 # ROUTER ASBR2 SETUP
 lab.create_file_from_list([
     f"ip addr add {asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]} dev lo",
-    f"ip unnumbered dev eth0",
-    f"ip unnumbered dev eth1",
+    f"ip addr add {asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]} dev eth0",
+    f"ip addr add {asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]} dev eth1",
     "systemctl start frr"
 ], f"{asBr2.name}.startup")
 
@@ -152,17 +187,26 @@ asBr2.create_file_from_list([
     "password zebra",
     "enable password zebra",
     f"router bgp {ex.get_asn('B')}",
-    "no bgp ebgp-requires-policy"
+    "no bgp ebgp-requires-policy",
+    "exit",
+    "interface eth0",
+    "ip ospf network point-to-point",
+    "exit",
+    "interface eth1",
+    "ip ospf network point-to-point",
+    "exit",
+    "router ospf",
+    f"network {asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]} area 0.0.0.0"
 ], "/etc/frr/frr.conf")
 
-asBr2.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
+asBr2.create_file_from_list(ex.set_daemons(["zebra","bgpd","ospfd","ospf6d"]), "/etc/frr/daemons")
 asBr2.create_file_from_list(["service integrated-vtysh-config", f"hostname {asBr2.name}-frr"], "/etc/frr/vtysh.conf")
 
 # ROUTER ASBR3 SETUP
 lab.create_file_from_list([
     f"ip addr add {asBr3_lo_addr}/{ex.subnet_addr[asBr3_lo_addr]} dev lo",
-    f"ip unnumbered dev eth0",
-    f"ip unnumbered dev eth1",
+    f"ip addr add {asBr3_lo_addr}/{ex.subnet_addr[asBr3_lo_addr]} dev eth0",
+    f"ip addr add {asBr3_lo_addr}/{ex.subnet_addr[asBr3_lo_addr]} dev eth1",
     "systemctl start frr"
 ], f"{asBr3.name}.startup")
 
@@ -170,10 +214,19 @@ asBr3.create_file_from_list([
     "password zebra",
     "enable password zebra",
     f"router bgp {ex.get_asn('B')}",
-    "no bgp ebgp-requires-policy"
+    "no bgp ebgp-requires-policy",
+    "exit",
+    "interface eth0",
+    "ip ospf network point-to-point",
+    "exit",
+    "interface eth1",
+    "ip ospf network point-to-point",
+    "exit",
+    "router ospf",
+    f"network {asBr3_lo_addr}/{ex.subnet_addr[asBr3_lo_addr]} area 0.0.0.0"
 ], "/etc/frr/frr.conf")
 
-asBr3.create_file_from_list(ex.set_daemons(["zebra","bgpd"]), "/etc/frr/daemons")
+asBr3.create_file_from_list(ex.set_daemons(["zebra","bgpd","ospfd","ospf6d"]), "/etc/frr/daemons")
 asBr3.create_file_from_list(["service integrated-vtysh-config", f"hostname {asBr3.name}-frr"], "/etc/frr/vtysh.conf")
 
 try:
@@ -182,49 +235,46 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    ex.exec_cmd("as62r1", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'network 172.25.16.37/24' -c 'network 192.168.112.6/32' -c 'neighbor 172.25.16.61 remote-as 6' -c 'neighbor 172.31.5.45 remote-as 62' -c 'neighbor 172.31.5.45 update-source lo' -c 'neighbor 172.31.5.45 next-hop-self' -c 'neighbor 172.17.186.17 remote-as 62' -c 'neighbor 172.17.186.17 update-source lo' -c 'neighbor 172.17.186.17 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd("as62r2", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 192.168.112.6 remote-as 62' -c 'neighbor 192.168.112.6 update-source lo' -c 'neighbor 192.168.112.6 next-hop-self' -c 'neighbor 172.17.186.17 remote-as 62' -c 'neighbor 172.17.186.17 update-source lo' -c 'neighbor 172.17.186.17 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd("as62r3", "vtysh -c 'configure terminal' -c 'router bgp 62' -c 'neighbor 192.168.112.6 remote-as 62' -c 'neighbor 192.168.112.6 update-source lo' -c 'neighbor 192.168.112.6 next-hop-self' -c 'neighbor 172.31.5.45 remote-as 62' -c 'neighbor 172.31.5.45 update-source lo' -c 'neighbor 172.31.5.45 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd("as6r1", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'network 172.25.16.61/24' -c 'network 192.168.19.116/32' -c 'neighbor 172.25.16.37 remote-as 62' -c 'neighbor 192.168.83.104 remote-as 6' -c 'neighbor 192.168.83.104 update-source lo' -c 'neighbor 192.168.83.104 next-hop-self' -c 'neighbor 10.26.142.82 remote-as 6' -c 'neighbor 10.26.142.82 update-source lo' -c 'neighbor 10.26.142.82 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd("as6r2", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'neighbor 192.168.19.116 remote-as 6' -c 'neighbor 192.168.19.116 update-source lo' -c 'neighbor 192.168.19.116 next-hop-self' -c 'neighbor 10.26.142.82 remote-as 6' -c 'neighbor 10.26.142.82 update-source lo' -c 'neighbor 10.26.142.82 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd("as6r3", "vtysh -c 'configure terminal' -c 'router bgp 6' -c 'neighbor 192.168.19.116 remote-as 6' -c 'neighbor 192.168.19.116 update-source lo' -c 'neighbor 192.168.19.116 next-hop-self' -c 'neighbor 192.168.83.104 remote-as 6' -c 'neighbor 192.168.83.104 update-source lo' -c 'neighbor 192.168.83.104 next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'network {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'neighbor {asBr1_asAr1_addr} remote-as {ex.get_asn('B')}' -c 'redistribute ospf' -c 'neighbor {asAr2_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr2_lo_addr} update-source lo' -c 'neighbor {asAr2_lo_addr} next-hop-self' -c 'neighbor {asAr3_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr3_lo_addr} update-source lo' -c 'neighbor {asAr3_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asAr2.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} update-source lo' -c 'neighbor {asAr1_lo_addr} next-hop-self' -c 'neighbor {asAr3_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr3_lo_addr} update-source lo' -c 'neighbor {asAr3_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asAr3.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} update-source lo' -c 'neighbor {asAr1_lo_addr} next-hop-self' -c 'neighbor {asAr2_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr2_lo_addr} update-source lo' -c 'neighbor {asAr2_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('B')}' -c 'network {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'neighbor {asAr1_asBr1_addr} remote-as {ex.get_asn('A')}' -c 'redistribute ospf' -c 'neighbor {asBr2_lo_addr} remote-as {ex.get_asn('B')}' -c 'neighbor {asBr2_lo_addr} update-source lo' -c 'neighbor {asBr2_lo_addr} next-hop-self' -c 'neighbor {asBr3_lo_addr} remote-as {ex.get_asn('B')}' -c 'neighbor {asBr3_lo_addr} update-source lo' -c 'neighbor {asBr3_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asBr2.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asBr1_lo_addr} remote-as {ex.get_asn('B')}' -c 'neighbor {asBr1_lo_addr} update-source lo' -c 'neighbor {asBr1_lo_addr} next-hop-self' -c 'neighbor {asBr3_lo_addr} remote-as {ex.get_asn('B')}' -c 'neighbor {asBr3_lo_addr} update-source lo' -c 'neighbor {asBr3_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
+    ex.exec_cmd(asBr3.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asBr1_lo_addr} remote-as {ex.get_asn('B')}' -c 'neighbor {asBr1_lo_addr} update-source lo' -c 'neighbor {asBr1_lo_addr} next-hop-self' -c 'neighbor {asBr2_lo_addr} remote-as {ex.get_asn('B')}' -c 'neighbor {asBr2_lo_addr} update-source lo' -c 'neighbor {asBr2_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
     ex.run_client()
 
     # EXERCICE EVALUATION
-    for a in lab.machines.keys():
-        for b in lab.machines.keys():
-            if a != b:
-                b_lo = ex.intf_addr[f"{b}-lo"]
-                asn_a = ex.get_router_asn(a)
-                asn_b = ex.get_router_asn(b)
+    ex.show_ip_bgp_test(asAr2.name, [f"*>i{asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]}", f"{asAr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "?"], True,
+        f"the {asAr2.name} route to {asBr2.name} is correct",
+        f"the {asAr2.name} route to {asBr2.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
 
-                if "r1" in a and "r1" in b:
-                    b_a_addr = ex.intf_addr[f"{b}-{a}"]
+    ex.show_ip_bgp_test(asAr2.name, [f"*>i{asBr3_lo_addr}/{ex.subnet_addr[asBr3_lo_addr]}", f"{asAr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "?"], True,
+        f"the {asAr2.name} route to {asBr3.name} is correct",
+        f"the {asAr2.name} route to {asBr3.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
 
-                    ex.in_output_test(a, f"vtysh -c 'show ip bgp neighbors {b_a_addr}'",
-                        f"BGP neighbor is {b_a_addr}, remote AS {ex.get_router_asn(b)}, local AS {ex.get_router_asn(a)}, external link",
-                        f"{a} has {b} as neighbor in his BGP database",
-                        f"{a} has not {b} as neighbor in his BGP database, make sure you have announced {b} as a neighbor with the correct subnet address and AS number")
+    ex.show_ip_bgp_test(asAr3.name, [f"*>i{asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]}", f"{asAr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "?"], True,
+        f"the {asAr3.name} route to {asBr2.name} is correct",
+        f"the {asAr3.name} route to {asBr2.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
 
-                    ex.show_ip_bgp_test(a, [ex.to_ignore, f"{b_lo}/{ex.subnet_addr[b_lo]}", f"{b_a_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_router_asn(b)}", "i"], True,
-                        f"{a} knows {b} loopback address in his BGP routing table",
-                        f"{a} does not know {b} loopback address in his BGP routing table, make sure you have announced {b} loopback address to the network")
-                
-                if asn_a == asn_b:
-                    ex.in_output_test(a, f"vtysh -c 'show ip bgp neighbors {b_lo}'",
-                        f"BGP neighbor is {b_lo}, remote AS {asn_a}, local AS {asn_a}, internal link",
-                        f"{a} has {b} as neighbor in his BGP database",
-                        f"{a} has not {b} as neighbor in his BGP database, make sure you have announced {b} as a neighbor with the correct loopback address")
+    ex.show_ip_bgp_test(asAr3.name, [f"*>i{asBr3_lo_addr}/{ex.subnet_addr[asBr3_lo_addr]}", f"{asAr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "?"], True,
+        f"the {asAr3.name} route to {asBr3.name} is correct",
+        f"the {asAr3.name} route to {asBr3.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
 
-                    ex.in_output_test(a, f"vtysh -c 'show ip bgp neighbors {b_lo}'",
-                        f"Update source is lo",
-                        f"{a} has his loopback address set as source for his neighbor {b}",
-                        f"{a} has not his loopback address set as source for his neighbor {b}, make sure you have set the update-source parameter")
+    ex.show_ip_bgp_test(asBr2.name, [f"*>i{asAr2_lo_addr}/{ex.subnet_addr[asAr2_lo_addr]}", f"{asBr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "?"], True,
+        f"the {asBr2.name} route to {asAr2.name} is correct",
+        f"the {asBr2.name} route to {asAr2.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
 
-                    ex.in_output_test(a, f"vtysh -c 'show ip bgp neighbors {b_lo}'",
-                        f"NEXT_HOP is always this router",
-                        f"{a} is set as next hop for his neighbor {b}",
-                        f"{a} is not set as next hop for his neighbor {b}, make sure you have set the next-hop-self parameter")
+    ex.show_ip_bgp_test(asBr2.name, [f"*>i{asAr3_lo_addr}/{ex.subnet_addr[asAr3_lo_addr]}", f"{asBr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "?"], True,
+        f"the {asBr2.name} route to {asAr3.name} is correct",
+        f"the {asBr2.name} route to {asAr3.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
+
+    ex.show_ip_bgp_test(asBr3.name, [f"*>i{asAr2_lo_addr}/{ex.subnet_addr[asAr2_lo_addr]}", f"{asBr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "?"], True,
+        f"the {asBr3.name} route to {asAr2.name} is correct",
+        f"the {asBr3.name} route to {asAr2.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
+
+    ex.show_ip_bgp_test(asBr3.name, [f"*>i{asAr3_lo_addr}/{ex.subnet_addr[asAr3_lo_addr]}", f"{asBr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "?"], True,
+        f"the {asBr3.name} route to {asAr3.name} is correct",
+        f"the {asBr3.name} route to {asAr3.name} does not exixts or is incorrect, please check the configurations of eBGP and iBGP")
 
     # SHOW FEEDBACK
     ex.send_feedback()

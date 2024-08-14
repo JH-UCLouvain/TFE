@@ -147,10 +147,15 @@ class Kathara_Exercice:
         for i in range(len(bgp_entries)):
             ent = [e for e in bgp_entries[i].split() if e.strip()]
             bgp_entries[i] = ent
-            if "/" in bgp_entries[i][1]:
-                network = bgp_entries[i][1]
-            else:
-                bgp_entries[i].insert(1, network)
+            if "/" in bgp_entries[i][0]:
+                ip_chars = set('0123456789abcdefABCDEF:./')
+                first_col = bgp_entries[i][0]
+                for index, char in enumerate(first_col):
+                    if char in ip_chars:
+                        network = first_col[index:]
+                        break
+            elif "/" in bgp_entries[i][1]: network = bgp_entries[i][1]
+            else: bgp_entries[i].insert(1, network)
         for entry in bgp_entries:
             if len(expected) == len(entry):
                 line_found = True
