@@ -128,11 +128,6 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr2_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr2_lo_addr} update-source lo' -c 'neighbor {asAr2_lo_addr} next-hop-self' -c 'neighbor {asAr3_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr3_lo_addr} update-source lo' -c 'neighbor {asAr3_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd(asAr2.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} update-source lo' -c 'neighbor {asAr1_lo_addr} next-hop-self' -c 'neighbor {asAr3_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr3_lo_addr} update-source lo' -c 'neighbor {asAr3_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd(asAr3.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr1_lo_addr} update-source lo' -c 'neighbor {asAr1_lo_addr} next-hop-self' -c 'neighbor {asAr2_lo_addr} remote-as {ex.get_asn('A')}' -c 'neighbor {asAr2_lo_addr} update-source lo' -c 'neighbor {asAr2_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
-
     # EXERCICE EVALUATION
     for a in lab.machines.keys():
         for b in lab.machines.keys():

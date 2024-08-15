@@ -169,9 +169,6 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr2_lo_addr} next-hop-self' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
-
     # EXERCICE EVALUATION
     ex.show_ip_bgp_test(asAr2.name, [f"*>i{asBr2_lo_addr}/{ex.subnet_addr[asBr2_lo_addr]}", f"{asAr1_lo_addr}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "?"], True,
         f"the {asAr2.name} route to {asBr2.name} is correct",

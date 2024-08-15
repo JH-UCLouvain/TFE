@@ -168,9 +168,6 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map LOCPRF permit 20' -c 'set local-preference 5' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asDr1_asAr1_addr} route-map LOCPRF in' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
-
     # EXERCICE EVALUATION
     ex.show_ip_bgp_test(asAr1.name, ["*>", f"{asCr1_asDr1_subnet}/{ex.subnet_addr[asCr1_asDr1_subnet]}", f"{asBr1_asAr1_addr}", ex.to_ignore, f"{ex.get_asn('B')}", f"{ex.get_asn('C')}", "i"], True,
         f"{asAr1.name} knows AS{ex.get_asn('B')}->AS{ex.get_asn('C')} as the best route to {asCr1.name}-{asDr1.name} subnet",

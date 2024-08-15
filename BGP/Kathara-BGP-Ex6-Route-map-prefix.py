@@ -134,11 +134,6 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    deny_asC = f"DENY_AS{ex.get_asn('C')}_PREFIX"
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'ip prefix-list {deny_asC} seq 1 deny {asAr1_asCr1_subnet}/{ex.subnet_addr[asAr1_asCr1_subnet]}' -c 'route-map {deny_asC} deny 10' -c 'match ip address prefix-list {deny_asC}' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asCr1_asAr1_addr} route-map {deny_asC} in' -c 'neighbor {asCr1_asAr1_addr} route-map {deny_asC} out' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'ip prefix-list {deny_asC} seq 1 deny {asBr1_asCr1_subnet}/{ex.subnet_addr[asBr1_asCr1_subnet]}' -c 'route-map {deny_asC} deny 10' -c 'match ip address prefix-list {deny_asC}' -c 'exit' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asCr1_asBr1_addr} route-map {deny_asC} in' -c 'neighbor {asCr1_asBr1_addr} route-map {deny_asC} out' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
-
     # EXERCICE EVALUATION
     ex.show_ip_bgp_test(asAr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asAr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
         f"{asAr1.name} knows a route to AS{ex.get_asn('B')}",

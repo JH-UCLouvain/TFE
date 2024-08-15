@@ -117,11 +117,6 @@ try:
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
 
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'route-map ACCEPT_ALL permit 10' -c 'exit' -c 'route-map MED permit 20' -c 'set metric 100' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr2_asAr1_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr2_asAr1_addr} route-map ACCEPT_ALL out' -c 'neighbor {asBr1_asAr1_addr} route-map ACCEPT_ALL in' -c 'neighbor {asBr1_asAr1_addr} route-map ACCEPT_ALL out' -c 'neighbor {asBr1_asAr1_addr} route-map MED out' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd(asAr2.name, f"vtysh -c 'configure terminal' -c 'route-map ACCEPT_ALL permit 10' -c 'exit' -c 'router bgp {ex.get_asn('A')}' -c 'neighbor {asAr1_asAr2_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr1_asAr2_addr} route-map ACCEPT_ALL out' -c 'neighbor {asBr1_asAr2_addr} route-map ACCEPT_ALL in' -c 'neighbor {asBr1_asAr2_addr} route-map ACCEPT_ALL out' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'route-map ACCEPT_ALL permit 10' -c 'exit' -c 'router bgp {ex.get_asn('B')}' -c 'neighbor {asAr1_asBr1_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr1_asBr1_addr} route-map ACCEPT_ALL out' -c 'neighbor {asAr2_asBr1_addr} route-map ACCEPT_ALL in' -c 'neighbor {asAr2_asBr1_addr} route-map ACCEPT_ALL out' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
-
     # EXERCICE EVALUATION
     ex.show_ip_bgp_test(asBr1.name, [ex.to_ignore, f"{asAr1_asAr2_subnet}/{ex.subnet_addr[asAr1_asAr2_subnet]}", ex.to_ignore, ex.to_ignore, ex.to_ignore, f"{ex.get_asn('A')}", "i"], True,
         f"{asBr1.name} knows {asAr1.name}-{asAr2.name} subnet in his BGP table",

@@ -71,10 +71,6 @@ try:
     print("Starting lab ...")
     Kathara.get_instance().deploy_lab(lab=lab)
     ex.run_client()
-    
-    ex.exec_cmd(asAr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('A')}' -c 'network {asAr1_asBr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'neighbor {asBr1_asAr1_addr} remote-as {ex.get_asn('B')}' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.exec_cmd(asBr1.name, f"vtysh -c 'configure terminal' -c 'router bgp {ex.get_asn('B')}' -c 'network {asBr1_asAr1_addr}/{ex.subnet_addr[asAr1_asBr1_subnet]}' -c 'neighbor {asAr1_asBr1_addr} remote-as {ex.get_asn('A')}' -c 'exit' -c 'exit' -c 'write memory'")
-    ex.run_client()
 
     # EXERCICE EVALUATION
     ex.show_ip_bgp_test(asAr1.name, [ex.to_ignore, f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asBr1_asAr1_addr}", ex.to_ignore, ex.to_ignore, f"{ex.get_asn('B')}", "i"], True,
