@@ -34,19 +34,16 @@ lab.connect_machine_to_link(asCr1.name, "B", 0)
 lab.connect_machine_to_link(asAr1.name, "C", 1)
 lab.connect_machine_to_link(asCr1.name, "C", 1)
 
-ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
-
 mask = 24
-
-asAr1_asBr1_subnet = ex.generate_subnet_addr(ranges, mask)
+asAr1_asBr1_subnet = ex.generate_subnet_addr(4, mask)
 asAr1_asBr1_addr = ex.generate_intf_addr(f"{asAr1.name}-{asBr1.name}", asAr1_asBr1_subnet, mask)
 asBr1_asAr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asAr1.name}", asAr1_asBr1_subnet, mask)
 
-asBr1_asCr1_subnet = ex.generate_subnet_addr(ranges, mask)
+asBr1_asCr1_subnet = ex.generate_subnet_addr(4, mask)
 asBr1_asCr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asCr1.name}", asBr1_asCr1_subnet, mask)
 asCr1_asBr1_addr = ex.generate_intf_addr(f"{asCr1.name}-{asBr1.name}", asBr1_asCr1_subnet, mask)
 
-asAr1_asCr1_subnet = ex.generate_subnet_addr(ranges, mask)
+asAr1_asCr1_subnet = ex.generate_subnet_addr(4, mask)
 asAr1_asCr1_addr = ex.generate_intf_addr(f"{asAr1.name}-{asCr1.name}", asAr1_asCr1_subnet, mask)
 asCr1_asAr1_addr = ex.generate_intf_addr(f"{asCr1.name}-{asAr1.name}", asAr1_asCr1_subnet, mask)
 

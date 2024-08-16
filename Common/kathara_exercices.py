@@ -17,6 +17,15 @@ class Kathara_Exercice:
         self.intf_addr = dict()
         self.asn = dict()
         self.to_ignore = "X"
+        self.ipv4_ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
+        prefix_template = "fdXX:XXXX:XXXX"
+        prefix = ""
+        for i in range(len(prefix_template)):
+            if prefix_template[i] == 'X': prefix += random.choice("0123456789abcdef")
+            else: prefix += prefix_template[i]
+        start_addr = prefix + ":0000:0000:0000:0000:0000"
+        end_addr = prefix + ":ffff:ffff:ffff:ffff:ffff"
+        self.ipv6_ranges = [(start_addr,end_addr)]
 
     def send_feedback(self, grade=None, result=None, feedback=None):
         if grade is None: grade = 100 if self.n_tests == 0 else ((self.n_success_tests / self.n_tests) * 100)
@@ -38,9 +47,12 @@ class Kathara_Exercice:
         else: addr = ":".join(format(int(addr_bin[i:i+16], 2), "x") for i in range(0, 128, 16))
         return addr
 
-    def generate_subnet_addr(self, ranges, mask):
+    def generate_subnet_addr(self, ip_version, mask):
         while True:
-            start, end = random.choice(ranges)
+            start = ""
+            end = ""
+            if ip_version == 4: start, end = random.choice(self.ipv4_ranges)
+            else: start, end = random.choice(self.ipv6_ranges)
             start_bin = self.addr_to_bin(start)
             end_bin = self.addr_to_bin(end)
             addr_bin = ""

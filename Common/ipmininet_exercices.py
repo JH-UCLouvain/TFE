@@ -16,6 +16,15 @@ class IPMininet_Exercice:
         self.intf_names = dict()
         self.correct_answer = ""
         self.student_answer = ""
+        self.ipv4_ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
+        prefix_template = "fdXX:XXXX:XXXX"
+        prefix = ""
+        for i in range(len(prefix_template)):
+            if prefix_template[i] == 'X': prefix += random.choice("0123456789abcdef")
+            else: prefix += prefix_template[i]
+        start_addr = prefix + ":0000:0000:0000:0000:0000"
+        end_addr = prefix + ":ffff:ffff:ffff:ffff:ffff"
+        self.ipv6_ranges = [(start_addr,end_addr)]
 
     def send_feedback(self, grade=None, result=None, feedback=None):
         if grade is None: grade = 100 if self.n_tests == 0 else ((self.n_success_tests / self.n_tests) * 100)
@@ -43,11 +52,19 @@ class IPMininet_Exercice:
         else: addr = ":".join(format(int(addr_bin[i:i+16], 2), "x") for i in range(0, 128, 16))
         return addr
 
-    def generate_subnet_addr(self, mask):
+    def generate_subnet_addr(self, ip_version, mask):
         while True:
-            addr_bin = "".join(random.choice("01") for _ in range(mask))
-            n_bits = 32-mask if self.ip_version == 4 else 128-mask
-            if n_bits > 0: addr_bin = addr_bin + "".join("0" for _ in range(n_bits))
+            start = ""
+            end = ""
+            if ip_version == 4: start, end = random.choice(self.ipv4_ranges)
+            else: start, end = random.choice(self.ipv6_ranges)
+            start_bin = self.addr_to_bin(start)
+            end_bin = self.addr_to_bin(end)
+            addr_bin = ""
+            for i in range(len(start_bin)):
+                if i > mask-1: addr_bin += "0"
+                elif start_bin[i] == end_bin[i]: addr_bin += start_bin[i]
+                else: addr_bin += random.choice("01")
             is_new = True
             for sub_addr, sub_mask in self.subnet_addr.items():
                 sub_addr_bin = self.addr_to_bin(sub_addr)
@@ -60,7 +77,7 @@ class IPMininet_Exercice:
     def generate_intf_addr(self, intf, subnet_addr, mask):
         while True:
             addr = ""
-            n_bits = 32-mask if self.ip_version == 4 else 128-mask
+            n_bits = 32-mask if "." in subnet_addr else 128-mask
             if n_bits > 0:
                 addr_bin = self.addr_to_bin(subnet_addr)
                 fixed = addr_bin[:-n_bits]
@@ -80,7 +97,7 @@ class IPMininet_Exercice:
                 return intf_name
 
     def create_link(self, iptopo_obj, node1, node2, mask):
-        subnet = self.generate_subnet_addr(mask)
+        subnet = self.generate_subnet_addr(self.ip_version, mask)
         name1 = node1.node
         name2 = node2.node
         link = iptopo_obj.addLink(node1, node2, intfName1=self.generate_intf_name(f"{name1}-{name2}"), intfName2=self.generate_intf_name(f"{name2}-{name1}"))

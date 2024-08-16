@@ -25,17 +25,17 @@ class MyTopology(IPTopo):
         self.addLink(h3, r1, intfName1=ex.generate_intf_name("h3-r1"), intfName2=ex.generate_intf_name("r1-h3"))
 
         mask = 64
-        subnet = ex.generate_subnet_addr(mask)
+        subnet = ex.generate_subnet_addr(ex.ip_version, mask)
         ex.generate_intf_addr("h1-r1", subnet, mask)
         ex.generate_intf_addr("r1-h1", subnet, mask)
 
         mask = 64
-        subnet = ex.generate_subnet_addr(mask)
+        subnet = ex.generate_subnet_addr(ex.ip_version, mask)
         ex.generate_intf_addr("h2-r1", subnet, mask)
         ex.generate_intf_addr("r1-h2", subnet, mask)
 
         mask = 64
-        subnet = ex.generate_subnet_addr(mask)
+        subnet = ex.generate_subnet_addr(ex.ip_version, mask)
         ex.generate_intf_addr("h3-r1", subnet, mask)
         ex.generate_intf_addr("r1-h3", subnet, mask)
 

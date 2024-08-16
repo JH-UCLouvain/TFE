@@ -34,12 +34,10 @@ lab.connect_machine_to_link(asAr3.name, "B", 0)
 lab.connect_machine_to_link(asAr2.name, "C", 1)
 lab.connect_machine_to_link(asAr3.name, "C", 1)
 
-ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
-
 lo_mask = 32
-asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
-asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
-asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(ranges, lo_mask), lo_mask)
+asAr1_lo_addr = ex.generate_intf_addr(f"{asAr1.name}-lo", ex.generate_subnet_addr(4, lo_mask), lo_mask)
+asAr2_lo_addr = ex.generate_intf_addr(f"{asAr2.name}-lo", ex.generate_subnet_addr(4, lo_mask), lo_mask)
+asAr3_lo_addr = ex.generate_intf_addr(f"{asAr3.name}-lo", ex.generate_subnet_addr(4, lo_mask), lo_mask)
 
 # ROUTER ASAR1 SETUP
 lab.create_file_from_list([

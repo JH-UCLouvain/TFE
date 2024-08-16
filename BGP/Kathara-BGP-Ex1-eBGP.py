@@ -27,10 +27,8 @@ asBr1 = lab.new_machine(f"as{ex.get_asn('B')}r1", **{"image": "kathara/frr"})
 lab.connect_machine_to_link(asAr1.name, "A", 0)
 lab.connect_machine_to_link(asBr1.name, "A", 0)
 
-ranges = [("10.0.0.0","10.255.255.255"), ("172.16.0.0","172.31.255.255"), ("192.168.0.0","192.168.255.255")]
-
 mask = 24
-asAr1_asBr1_subnet = ex.generate_subnet_addr(ranges, mask)
+asAr1_asBr1_subnet = ex.generate_subnet_addr(4, mask)
 asAr1_asBr1_addr = ex.generate_intf_addr(f"{asAr1.name}-{asBr1.name}", asAr1_asBr1_subnet, mask)
 asBr1_asAr1_addr = ex.generate_intf_addr(f"{asBr1.name}-{asAr1.name}", asAr1_asBr1_subnet, mask)
 
