@@ -173,6 +173,10 @@ try:
         f"{asAr1.name} knows AS{ex.get_asn('B')}->AS{ex.get_asn('C')} as the best route to {asCr1.name}-{asDr1.name} subnet",
         f"{asAr1.name} does not know AS{ex.get_asn('B')}->AS{ex.get_asn('C')} as the best route to {asCr1.name}-{asDr1.name} subnet, make sure you have created and applied the route map that modifies the local preference attribute to the correct route")
 
+    ex.show_ip_bgp_test(asDr1.name, ["*>", f"{asAr1_asBr1_subnet}/{ex.subnet_addr[asAr1_asBr1_subnet]}", f"{asCr1_asDr1_addr}", ex.to_ignore, f"{ex.get_asn('C')}", f"{ex.get_asn('B')}", "i"], True,
+        f"{asDr1.name} knows AS{ex.get_asn('C')}->AS{ex.get_asn('B')} as the best route to {asAr1.name}-{asBr1.name} subnet",
+        f"{asDr1.name} does not know AS{ex.get_asn('C')}->AS{ex.get_asn('B')} as the best route to {asAr1.name}-{asBr1.name} subnet, make sure you have created and applied the route map that modifies the local preference attribute to the correct route")
+
     # SHOW FEEDBACK
     ex.send_feedback()
 
