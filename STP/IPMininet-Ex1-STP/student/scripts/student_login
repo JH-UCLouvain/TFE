@@ -47,12 +47,12 @@ try:
 
     correct = ""
     for s in net.switches:
-        lines = net[s.name].cmd(f"brctl showstp {s.name}").splitlines()
+        lines = net[s.name].cmd(f"bridge link show").splitlines()
         for i in range(len(lines)):
             if "blocking" in lines[i]:
-                correct += lines[i-1].split(" ")[0] + ","
+                correct += lines[i].split(" ")[1].split("@")[0] + ","
+        break
     ex.correct_answer = "none" if correct == "" else ",".join(sorted(correct.rstrip(",").split(",")))
-
     ex.compare_answer_test()
     ex.send_feedback()
 

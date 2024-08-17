@@ -3,7 +3,7 @@ contact_url: ''
 context: |-
     This exercise aims to teach you the basic network commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to find informations about a LAN network.
 
-    First, you can identify the switches and the links between them by using ``nodes`` and ``links``. After that, try to find the root switch. For that, you can use the command ``<node> brctl showstp <node>``. You can give your answer by typing the custom command ``answer`` followed by the name of the root switch (for example ``answer s5``). Please note that usually the root port is determined by the number of the switch, in this exercice it is not the case.
+    First, you can identify the switches and the links between them by using ``nodes`` and ``links``. After that, try to find the root switch. For that, you can use the command ``ip -d link show`` to inspect the data of the switches and their links (https://man7.org/linux/man-pages/man8/ip-link.8.html). You can give your answer by typing the custom command ``answer`` followed by the name of the root switch (for example ``answer s5``). Please note that usually the root port is determined by the number of the switch, in this exercice it is not the case.
 environment_id: ipmininet
 environment_parameters:
     limits:

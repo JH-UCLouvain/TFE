@@ -50,13 +50,14 @@ try:
 
     IPCLI(net)
 
+    root_priority = "51"
     for s in net.switches:
-        s_name = s.name
-        lines = net[s_name].cmd(f"brctl showstp {s_name}").splitlines()
-        if lines[1].split()[2] == lines[2].split()[2]:
-            ex.correct_answer = s_name
-            break
-
+        data = net[s.name].cmd(f"ip -d link show {s.name}").split()
+        for i in range(len(data)):
+            if data[i] == "priority" and int(data[i+1]) < int(root_priority):
+                ex.correct_answer = s.name
+                root_priority = data[i+1]
+                break
     ex.compare_answer_test()
     ex.send_feedback()
 
