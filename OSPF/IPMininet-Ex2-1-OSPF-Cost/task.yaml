@@ -3,9 +3,9 @@ contact_url: ''
 context: |-
     This exercise aims to teach you the basic network configuration commands in a virtual network simulated by IPMininet. It uses a ssh session that you can start by directly clicking the "Submit" button and by following the instructions. When you are done entering your Mininet commands, you can write the ``exit`` command to close the session and the exercice will end. For this exercice you will have to configure OSPF costs. We will consider the following network topology :
 
-    .. image:: IPMininet-Ex2-OSPF-Cost/topology.png
+    .. image:: IPMininet-Ex2-1-OSPF-Cost/topology.png
 
-    The OSPF protocol uses the costs of the interfaces to compute the shortests paths. For this exercice, configure the interfaces costs so that the packets from r1 to r5 follow the path r1-r2-r3-r5 and the packets from r5 to r1 must follow the path r5-r2-r3-r4-r1. We invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6).
+    The OSPF protocol uses the costs of the interfaces to compute the shortests paths. For this exercice, configure the interfaces costs so that the packets from r1 to r6 follow the path r1-r2-r3-r4-r5-r6 and the packets from r6 to r1 must follow the path r6-r5-r4-r3-r2-r1. We invite you to check the FRRouting documentation (https://docs.frrouting.org/en/latest/) to find the commands needed (section OSPFv2 for IPv4 or section OSPFv3 for IPv6).
 environment_id: ipmininet
 environment_parameters:
     limits:
@@ -17,6 +17,6 @@ environment_parameters:
 environment_type: docker-ssh
 file: ''
 input_random: 0
-name: IPMininet Ex2 - OSPF Cost
+name: IPMininet Ex2-1 - OSPF Cost
 network_grading: false
 problems: {}

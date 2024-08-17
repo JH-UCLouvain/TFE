@@ -1,0 +1,48 @@
+#!/bin/python3
+# Author : Jeremy Holodiline
+
+from ipmininet.iptopo import IPTopo
+from ipmininet.ipnet import IPNet
+from ipmininet.cli import IPCLI
+
+import sys
+sys.path.insert(1, '/course/common/student/')
+from ipmininet_exercices import IPMininet_Exercice
+ex = IPMininet_Exercice(6)
+
+class MyTopology(IPTopo):
+
+    def build(self, *args, **kwargs):
+
+        r1 = self.addRouter("r1")
+        r2 = self.addRouter("r2")
+        r3 = self.addRouter("r3")
+        r4 = self.addRouter("r4")
+        r5 = self.addRouter("r5")
+        r6 = self.addRouter("r6")
+
+        ex.create_link(self, r1, r2, 64)
+        ex.create_link(self, r2, r3, 64)
+        ex.create_link(self, r3, r4, 64)
+        ex.create_link(self, r4, r5, 64)
+        ex.create_link(self, r5, r6, 64)
+        ex.create_link(self, r1, r6, 64)
+
+        super(MyTopology, self).build(*args, **kwargs)
+
+net = IPNet(topo=MyTopology(), allocate_IPs=False)
+
+try:
+    net.start()
+
+    IPCLI(net)
+
+    ex.traceroute_test("r1", "r6-r5", ["r2", "r3", "r4", "r5", "r6"], net)
+    ex.traceroute_test("r6", "r1-r2", ["r5", "r4", "r3", "r2", "r1"], net)
+    ex.send_feedback()
+
+except Exception as e:
+    ex.send_feedback(0, "crash", f"Error from the ipmininet script : {e}")
+
+finally:
+    net.stop()
